@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-neon: #FF5500;
+  --font-pixel: "Press Start 2P", cursive;
+  --font-sans: "Space Grotesk", sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: black;
+    color: white;
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  .float-subtle {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .btn-glow:hover {
+    box-shadow: 0 0 20px rgba(255, 85, 0, 0.4);
+  }
+  
+  .font-pixel {
+    -webkit-font-smoothing: none;
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
