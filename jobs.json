@@ -1,500 +1,498 @@
-[
-  {
-    "id": 1,
-    "title": "Sales Intern showroom staff",
-    "company": "Hindustan Petroleum Corporation Limited",
-    "location": "Telangana",
-    "sector": "Customer Care / Service",
-    "education": "Graduate",
-    "description": "Sales Intern showroom staff at Hindustan Petroleum Corporation Limited under PM Internship Scheme. Location: Telangana.",
-    "skills": [
-      "sales",
-      "customer service",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 2,
-    "title": "Internship Trainee Sales",
-    "company": "Muthoot Finance Limited",
-    "location": "Telangana",
-    "sector": "Finance & Accounting",
-    "education": "Graduate",
-    "description": "Internship Trainee Sales at Muthoot Finance Limited under PM Internship Scheme. Location: Telangana.",
-    "skills": [
-      "sales",
-      "financial analysis",
-      "accounting",
-      "on-the-job training",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 3,
-    "title": "Internship traineecce",
-    "company": "Muthoot Finance Limited",
-    "location": "Telangana",
-    "sector": "Customer Care / Service",
-    "education": "Graduate",
-    "description": "Internship traineecce at Muthoot Finance Limited under PM Internship Scheme. Location: Telangana.",
-    "skills": [
-      "customer service",
-      "on-the-job training",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 4,
-    "title": "INTERNSHIP TRAINEE CCE",
-    "company": "Muthoot Finance Limited",
-    "location": "Telangana",
-    "sector": "Customer Care / Service",
-    "education": "Graduate",
-    "description": "INTERNSHIP TRAINEE CCE at Muthoot Finance Limited under PM Internship Scheme. Location: Telangana.",
-    "skills": [
-      "customer service",
-      "on-the-job training",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 5,
-    "title": "prime Minister Internship Scheme",
-    "company": "Shriram General Insurance Company Limited",
-    "location": "Telangana",
-    "sector": "Sales & Marketing",
-    "education": "Graduate",
-    "description": "prime Minister Internship Scheme at Shriram General Insurance Company Limited under PM Internship Scheme. Location: Telangana.",
-    "skills": [
-      "sales",
-      "marketing",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 6,
-    "title": "Merchandiser",
-    "company": "Dabur India Limited",
-    "location": "Telangana",
-    "sector": "Sales & Marketing",
-    "education": "Graduate",
-    "description": "Merchandiser at Dabur India Limited under PM Internship Scheme. Location: Telangana.",
-    "skills": [
-      "sales",
-      "marketing",
-      "merchandising",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 7,
-    "title": "Internship trainee CCE",
-    "company": "Muthoot Finance Limited",
-    "location": "Telangana",
-    "sector": "Customer Care / Service",
-    "education": "Graduate",
-    "description": "Internship trainee CCE at Muthoot Finance Limited under PM Internship Scheme. Location: Telangana.",
-    "skills": [
-      "customer service",
-      "on-the-job training",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 8,
-    "title": "Finance Intern",
-    "company": "Itc Limited",
-    "location": "Delhi",
-    "sector": "Finance & Accounting",
-    "education": "Graduate",
-    "description": "Finance Intern at Itc Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "financial analysis",
-      "accounting",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 9,
-    "title": "Frontline Operations",
-    "company": "National Stock Exchange Of India Ltd.",
-    "location": "Delhi",
-    "sector": "General",
-    "education": "Graduate",
-    "description": "Frontline Operations at National Stock Exchange Of India Ltd. under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 10,
-    "title": "CSA Intern Retail Outlet",
-    "company": "Hindustan Petroleum Corporation Limited",
-    "location": "Delhi",
-    "sector": "Customer Care / Service",
-    "education": "Graduate",
-    "description": "CSA Intern Retail Outlet at Hindustan Petroleum Corporation Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "customer service",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 11,
-    "title": "Sales Internship",
-    "company": "Icici Prudential Asset Management Company Limited",
-    "location": "Delhi",
-    "sector": "Sales & Marketing",
-    "education": "Graduate",
-    "description": "Sales Internship at Icici Prudential Asset Management Company Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "sales",
-      "marketing",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 12,
-    "title": "IRFC PM Internship Scheme",
-    "company": "Indian Railway Finance Corporation Limited",
-    "location": "Delhi",
-    "sector": "Finance & Accounting",
-    "education": "Graduate",
-    "description": "IRFC PM Internship Scheme at Indian Railway Finance Corporation Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "financial analysis",
-      "accounting",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 13,
-    "title": "Sales and Relationship Manager",
-    "company": "Icici Bank Limited",
-    "location": "Delhi",
-    "sector": "Sales & Marketing",
-    "education": "Graduate",
-    "description": "Sales and Relationship Manager at Icici Bank Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "sales",
-      "marketing",
-      "public relations",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 14,
-    "title": "Sales Intern",
-    "company": "Sbi General Insurance Company Limited",
-    "location": "Delhi",
-    "sector": "Sales & Marketing",
-    "education": "Graduate",
-    "description": "Sales Intern at Sbi General Insurance Company Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "sales",
-      "marketing",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 15,
-    "title": "Finance Internship",
-    "company": "Itc Limited",
-    "location": "Delhi",
-    "sector": "Finance & Accounting",
-    "education": "Graduate",
-    "description": "Finance Internship at Itc Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "financial analysis",
-      "accounting",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 16,
-    "title": "Training and Development",
-    "company": "Itc Limited",
-    "location": "Delhi",
-    "sector": "General",
-    "education": "Graduate",
-    "description": "Training and Development at Itc Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 17,
-    "title": "Human Resources Intern",
-    "company": "Itc Limited",
-    "location": "Delhi",
-    "sector": "General",
-    "education": "Graduate",
-    "description": "Human Resources Intern at Itc Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 18,
-    "title": "Food and Beverage Intern",
-    "company": "Itc Limited",
-    "location": "Delhi",
-    "sector": "Customer Care / Service",
-    "education": "Graduate",
-    "description": "Food and Beverage Intern at Itc Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "customer service",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 19,
-    "title": "Customer Relationship Executive",
-    "company": "Tamilnad Mercantile Bank Limited",
-    "location": "Delhi",
-    "sector": "Sales & Marketing",
-    "education": "Graduate",
-    "description": "Customer Relationship Executive at Tamilnad Mercantile Bank Limited under PM Internship Scheme. Location: Delhi.",
-    "skills": [
-      "sales",
-      "marketing",
-      "customer service",
-      "public relations",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 20,
-    "title": "HR Executive",
-    "company": "Mahindra And Mahindra Financial Services Limited",
-    "location": "Maharashtra",
-    "sector": "Banking and financial Services",
-    "education": "Graduate",
-    "description": "HR Executive at Mahindra And Mahindra Financial Services Limited under PM Internship Scheme. Location: Maharashtra.",
-    "skills": [
-      "human resources",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 21,
-    "title": "Retail Sales Intern",
-    "company": "Reliance Industries Limited",
-    "location": "Maharashtra",
-    "sector": "Sales & Marketing",
-    "education": "Graduate",
-    "description": "Retail Sales Intern at Reliance Industries Limited under PM Internship Scheme. Location: Maharashtra.",
-    "skills": [
-      "sales",
-      "marketing",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 22,
-    "title": "Sales Intern",
-    "company": "Titan Company Limited",
-    "location": "Maharashtra",
-    "sector": "Sales & Marketing",
-    "education": "Graduate",
-    "description": "Sales Intern at Titan Company Limited under PM Internship Scheme. Location: Maharashtra.",
-    "skills": [
-      "sales",
-      "marketing",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 23,
-    "title": "Finance Intern",
-    "company": "Lemon Tree Hotels Limited",
-    "location": "Maharashtra",
-    "sector": "Banking & Finance",
-    "education": "Graduate",
-    "description": "Finance Intern at Lemon Tree Hotels Limited under PM Internship Scheme. Location: Maharashtra.",
-    "skills": [
-      "financial analysis",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 24,
-    "title": "Food and Beverage Steward",
-    "company": "Lemon Tree Hotels Limited",
-    "location": "Maharashtra",
-    "sector": "Hospitality",
-    "education": "Graduate",
-    "description": "Food and Beverage Steward at Lemon Tree Hotels Limited under PM Internship Scheme. Location: Maharashtra.",
-    "skills": [
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 25,
-    "title": "Interns",
-    "company": "Persistent Systems Limited",
-    "location": "Maharashtra",
-    "sector": "General",
-    "education": "Graduate",
-    "description": "Interns at Persistent Systems Limited under PM Internship Scheme. Location: Maharashtra.",
-    "skills": [
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 26,
-    "title": "Sales Intern",
-    "company": "Lemon Tree Hotels Limited",
-    "location": "Maharashtra",
-    "sector": "Sales & Marketing",
-    "education": "Graduate",
-    "description": "Sales Intern at Lemon Tree Hotels Limited under PM Internship Scheme. Location: Maharashtra.",
-    "skills": [
-      "sales",
-      "marketing",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 27,
-    "title": "HR Executive",
-    "company": "Kotak Mahindra Bank Limited",
-    "location": "Karnataka",
-    "sector": "Banking and financial Services",
-    "education": "Graduate",
-    "description": "HR Executive at Kotak Mahindra Bank Limited under PM Internship Scheme. Location: Karnataka.",
-    "skills": [
-      "human resources",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 28,
-    "title": "Talent Acquistion Associate",
-    "company": "3M India Limited",
-    "location": "Karnataka",
-    "sector": "General",
-    "education": "Graduate",
-    "description": "Talent Acquistion Associate at 3M India Limited under PM Internship Scheme. Location: Karnataka.",
-    "skills": [
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 29,
-    "title": "Customer Care Executive Intern",
-    "company": "Muthoot Finance Limited",
-    "location": "Karnataka",
-    "sector": "Finance & Accounting",
-    "education": "Graduate",
-    "description": "Customer Care Executive Intern at Muthoot Finance Limited under PM Internship Scheme. Location: Karnataka.",
-    "skills": [
-      "financial analysis",
-      "accounting",
-      "customer service",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 30,
-    "title": "HR Intern",
-    "company": "Prestige Estates Projects Limited",
-    "location": "Karnataka",
-    "sector": "General",
-    "education": "Graduate",
-    "description": "HR Intern at Prestige Estates Projects Limited under PM Internship Scheme. Location: Karnataka.",
-    "skills": [
-      "human resources",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 31,
-    "title": "Sales",
-    "company": "Lemon Tree Hotels Limited",
-    "location": "Karnataka",
-    "sector": "Sales & Marketing",
-    "education": "Graduate",
-    "description": "Sales at Lemon Tree Hotels Limited under PM Internship Scheme. Location: Karnataka.",
-    "skills": [
-      "sales",
-      "marketing",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 32,
-    "title": "Research Intern",
-    "company": "Itc Limited",
-    "location": "Karnataka",
-    "sector": "Research and Development / Design / Product Development",
-    "education": "Graduate",
-    "description": "Research Intern at Itc Limited under PM Internship Scheme. Location: Karnataka.",
-    "skills": [
-      "product design",
-      "research & analysis",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 33,
-    "title": "Customer Relation Management",
-    "company": "Bharat Petroleum Corporation Limited",
-    "location": "Karnataka",
-    "sector": "Administration",
-    "education": "Graduate",
-    "description": "Customer Relation Management at Bharat Petroleum Corporation Limited under PM Internship Scheme. Location: Karnataka.",
-    "skills": [
-      "administration",
-      "customer service",
-      "public relations",
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  },
-  {
-    "id": 34,
-    "title": "Front Office",
-    "company": "Itc Limited",
-    "location": "Karnataka",
-    "sector": "General",
-    "education": "Graduate",
-    "description": "Front Office at Itc Limited under PM Internship Scheme. Location: Karnataka.",
-    "skills": [
-      "communication"
-    ],
-    "apply_url": "https://pminternship.mca.gov.in/"
-  }
+[
+  {
+    "id": 1,
+    "title": "Internship Trainee Sales",
+    "company": "Muthoot Finance Limited",
+    "location": "Telangana",
+    "sector": "Finance & Accounting",
+    "education": "Graduate",
+    "description": "Internship Trainee Sales at Muthoot Finance Limited under PM Internship Scheme. Location: Telangana.",
+    "skills": [
+      "sales",
+      "financial analysis",
+      "accounting",
+      "on-the-job training",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 2,
+    "title": "Internship traineecce",
+    "company": "Muthoot Finance Limited",
+    "location": "Telangana",
+    "sector": "Customer Care / Service",
+    "education": "Graduate",
+    "description": "Internship traineecce at Muthoot Finance Limited under PM Internship Scheme. Location: Telangana.",
+    "skills": [
+      "customer service",
+      "on-the-job training",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 3,
+    "title": "INTERNSHIP TRAINEE CCE",
+    "company": "Muthoot Finance Limited",
+    "location": "Telangana",
+    "sector": "Customer Care / Service",
+    "education": "Graduate",
+    "description": "INTERNSHIP TRAINEE CCE at Muthoot Finance Limited under PM Internship Scheme. Location: Telangana.",
+    "skills": [
+      "customer service",
+      "on-the-job training",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 4,
+    "title": "prime Minister Internship Scheme",
+    "company": "Shriram General Insurance Company Limited",
+    "location": "Telangana",
+    "sector": "Sales & Marketing",
+    "education": "Graduate",
+    "description": "prime Minister Internship Scheme at Shriram General Insurance Company Limited under PM Internship Scheme. Location: Telangana.",
+    "skills": [
+      "sales",
+      "marketing",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 5,
+    "title": "Merchandiser",
+    "company": "Dabur India Limited",
+    "location": "Telangana",
+    "sector": "Sales & Marketing",
+    "education": "Graduate",
+    "description": "Merchandiser at Dabur India Limited under PM Internship Scheme. Location: Telangana.",
+    "skills": [
+      "sales",
+      "marketing",
+      "merchandising",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 6,
+    "title": "Internship trainee CCE",
+    "company": "Muthoot Finance Limited",
+    "location": "Telangana",
+    "sector": "Customer Care / Service",
+    "education": "Graduate",
+    "description": "Internship trainee CCE at Muthoot Finance Limited under PM Internship Scheme. Location: Telangana.",
+    "skills": [
+      "customer service",
+      "on-the-job training",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 7,
+    "title": "CIO SSG Intern",
+    "company": "Tech Mahindra Limited",
+    "location": "Telangana",
+    "sector": "Information Technology",
+    "education": "Graduate",
+    "description": "CIO SSG Intern at Tech Mahindra Limited under PM Internship Scheme. Location: Telangana.",
+    "skills": [
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 8,
+    "title": "Finance Intern",
+    "company": "Itc Limited",
+    "location": "Delhi",
+    "sector": "Finance & Accounting",
+    "education": "Graduate",
+    "description": "Finance Intern at Itc Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "financial analysis",
+      "accounting",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 9,
+    "title": "Frontline Operations",
+    "company": "National Stock Exchange Of India Ltd.",
+    "location": "Delhi",
+    "sector": "General",
+    "education": "Graduate",
+    "description": "Frontline Operations at National Stock Exchange Of India Ltd. under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 10,
+    "title": "Sales Internship",
+    "company": "Icici Prudential Asset Management Company Limited",
+    "location": "Delhi",
+    "sector": "Sales & Marketing",
+    "education": "Graduate",
+    "description": "Sales Internship at Icici Prudential Asset Management Company Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "sales",
+      "marketing",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 11,
+    "title": "IRFC PM Internship Scheme",
+    "company": "Indian Railway Finance Corporation Limited",
+    "location": "Delhi",
+    "sector": "Finance & Accounting",
+    "education": "Graduate",
+    "description": "IRFC PM Internship Scheme at Indian Railway Finance Corporation Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "financial analysis",
+      "accounting",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 12,
+    "title": "Sales and Relationship Manager",
+    "company": "Icici Bank Limited",
+    "location": "Delhi",
+    "sector": "Sales & Marketing",
+    "education": "Graduate",
+    "description": "Sales and Relationship Manager at Icici Bank Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "sales",
+      "marketing",
+      "public relations",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 13,
+    "title": "Sales Intern",
+    "company": "Sbi General Insurance Company Limited",
+    "location": "Delhi",
+    "sector": "Sales & Marketing",
+    "education": "Graduate",
+    "description": "Sales Intern at Sbi General Insurance Company Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "sales",
+      "marketing",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 14,
+    "title": "Finance Internship",
+    "company": "Itc Limited",
+    "location": "Delhi",
+    "sector": "Finance & Accounting",
+    "education": "Graduate",
+    "description": "Finance Internship at Itc Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "financial analysis",
+      "accounting",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 15,
+    "title": "Training and Development",
+    "company": "Itc Limited",
+    "location": "Delhi",
+    "sector": "General",
+    "education": "Graduate",
+    "description": "Training and Development at Itc Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 16,
+    "title": "Human Resources Intern",
+    "company": "Itc Limited",
+    "location": "Delhi",
+    "sector": "General",
+    "education": "Graduate",
+    "description": "Human Resources Intern at Itc Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 17,
+    "title": "Food and Beverage Intern",
+    "company": "Itc Limited",
+    "location": "Delhi",
+    "sector": "Customer Care / Service",
+    "education": "Graduate",
+    "description": "Food and Beverage Intern at Itc Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "customer service",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 18,
+    "title": "Customer Relationship Executive",
+    "company": "Tamilnad Mercantile Bank Limited",
+    "location": "Delhi",
+    "sector": "Sales & Marketing",
+    "education": "Graduate",
+    "description": "Customer Relationship Executive at Tamilnad Mercantile Bank Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "sales",
+      "marketing",
+      "customer service",
+      "public relations",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 19,
+    "title": "HR Assistant",
+    "company": "Gail (India) Limited",
+    "location": "Delhi",
+    "sector": "Oil, Gas & Energy",
+    "education": "Graduate",
+    "description": "HR Assistant at Gail (India) Limited under PM Internship Scheme. Location: Delhi.",
+    "skills": [
+      "human resources",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 20,
+    "title": "HR Executive",
+    "company": "Mahindra And Mahindra Financial Services Limited",
+    "location": "Maharashtra",
+    "sector": "Banking and financial Services",
+    "education": "Graduate",
+    "description": "HR Executive at Mahindra And Mahindra Financial Services Limited under PM Internship Scheme. Location: Maharashtra.",
+    "skills": [
+      "human resources",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 21,
+    "title": "Retail Sales Intern",
+    "company": "Reliance Industries Limited",
+    "location": "Maharashtra",
+    "sector": "Sales & Marketing",
+    "education": "Graduate",
+    "description": "Retail Sales Intern at Reliance Industries Limited under PM Internship Scheme. Location: Maharashtra.",
+    "skills": [
+      "sales",
+      "marketing",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 22,
+    "title": "Sales Intern",
+    "company": "Titan Company Limited",
+    "location": "Maharashtra",
+    "sector": "Sales & Marketing",
+    "education": "Graduate",
+    "description": "Sales Intern at Titan Company Limited under PM Internship Scheme. Location: Maharashtra.",
+    "skills": [
+      "sales",
+      "marketing",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 23,
+    "title": "Finance Intern",
+    "company": "Lemon Tree Hotels Limited",
+    "location": "Maharashtra",
+    "sector": "Banking & Finance",
+    "education": "Graduate",
+    "description": "Finance Intern at Lemon Tree Hotels Limited under PM Internship Scheme. Location: Maharashtra.",
+    "skills": [
+      "financial analysis",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 24,
+    "title": "Food and Beverage Steward",
+    "company": "Lemon Tree Hotels Limited",
+    "location": "Maharashtra",
+    "sector": "Hospitality",
+    "education": "Graduate",
+    "description": "Food and Beverage Steward at Lemon Tree Hotels Limited under PM Internship Scheme. Location: Maharashtra.",
+    "skills": [
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 25,
+    "title": "Interns",
+    "company": "Persistent Systems Limited",
+    "location": "Maharashtra",
+    "sector": "General",
+    "education": "Graduate",
+    "description": "Interns at Persistent Systems Limited under PM Internship Scheme. Location: Maharashtra.",
+    "skills": [
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 26,
+    "title": "Sales Intern",
+    "company": "Lemon Tree Hotels Limited",
+    "location": "Maharashtra",
+    "sector": "Sales & Marketing",
+    "education": "Graduate",
+    "description": "Sales Intern at Lemon Tree Hotels Limited under PM Internship Scheme. Location: Maharashtra.",
+    "skills": [
+      "sales",
+      "marketing",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 27,
+    "title": "HR Executive",
+    "company": "Kotak Mahindra Bank Limited",
+    "location": "Karnataka",
+    "sector": "Banking and financial Services",
+    "education": "Graduate",
+    "description": "HR Executive at Kotak Mahindra Bank Limited under PM Internship Scheme. Location: Karnataka.",
+    "skills": [
+      "human resources",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 28,
+    "title": "Talent Acquistion Associate",
+    "company": "3M India Limited",
+    "location": "Karnataka",
+    "sector": "General",
+    "education": "Graduate",
+    "description": "Talent Acquistion Associate at 3M India Limited under PM Internship Scheme. Location: Karnataka.",
+    "skills": [
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 29,
+    "title": "Customer Care Executive Intern",
+    "company": "Muthoot Finance Limited",
+    "location": "Karnataka",
+    "sector": "Finance & Accounting",
+    "education": "Graduate",
+    "description": "Customer Care Executive Intern at Muthoot Finance Limited under PM Internship Scheme. Location: Karnataka.",
+    "skills": [
+      "financial analysis",
+      "accounting",
+      "customer service",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 30,
+    "title": "Intern SAP",
+    "company": "Prestige Estates Projects Limited",
+    "location": "Karnataka",
+    "sector": "Information Technology",
+    "education": "Graduate",
+    "description": "Intern SAP at Prestige Estates Projects Limited under PM Internship Scheme. Location: Karnataka.",
+    "skills": [
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 31,
+    "title": "HR Intern",
+    "company": "Prestige Estates Projects Limited",
+    "location": "Karnataka",
+    "sector": "General",
+    "education": "Graduate",
+    "description": "HR Intern at Prestige Estates Projects Limited under PM Internship Scheme. Location: Karnataka.",
+    "skills": [
+      "human resources",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 32,
+    "title": "Sales",
+    "company": "Lemon Tree Hotels Limited",
+    "location": "Karnataka",
+    "sector": "Sales & Marketing",
+    "education": "Graduate",
+    "description": "Sales at Lemon Tree Hotels Limited under PM Internship Scheme. Location: Karnataka.",
+    "skills": [
+      "sales",
+      "marketing",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 33,
+    "title": "Research Intern",
+    "company": "Itc Limited",
+    "location": "Karnataka",
+    "sector": "Research and Development / Design / Product Development",
+    "education": "Graduate",
+    "description": "Research Intern at Itc Limited under PM Internship Scheme. Location: Karnataka.",
+    "skills": [
+      "product design",
+      "research & analysis",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  },
+  {
+    "id": 34,
+    "title": "Customer Relation Management",
+    "company": "Bharat Petroleum Corporation Limited",
+    "location": "Karnataka",
+    "sector": "Administration",
+    "education": "Graduate",
+    "description": "Customer Relation Management at Bharat Petroleum Corporation Limited under PM Internship Scheme. Location: Karnataka.",
+    "skills": [
+      "administration",
+      "customer service",
+      "public relations",
+      "communication"
+    ],
+    "apply_url": "https://pminternship.mca.gov.in/"
+  }
 ]

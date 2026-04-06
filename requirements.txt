@@ -1,24 +1,22 @@
-# Core Backend
-fastapi
-uvicorn[standard]
-pydantic
-python-dotenv
-
-# PDF Processing
-pdfplumber
-pdf2image
-pytesseract
-python-docx
-Pillow
-
-# AI / ML
-google-genai
-scikit-learn
-
-# Web Scraping
-firecrawl-py
-requests
-playwright
-
-# HTTP (must be modern for Python 3.13)
+# Core Backend
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+# PDF Processing
+pdfplumber
+pdf2image
+pytesseract
+python-docx
+Pillow
+# AI / ML
+google-generativeai
+groq
+openai
+scikit-learn
+# Web Scraping
+firecrawl-py
+requests
+playwright
+# HTTP (must be modern for Python 3.13)
 httpx>=0.27

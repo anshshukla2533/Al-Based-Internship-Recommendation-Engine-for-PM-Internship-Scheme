@@ -1,78 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PM Internship Portal - Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 flex items-center justify-center h-screen font-sans">
-
-    <div class="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md text-center border border-gray-100">
-        <div class="mb-8">
-            <h2 class="text-3xl font-bold text-gray-800 tracking-tight">Welcome</h2>
-            <p class="text-gray-500 mt-2">Sign in to find your perfect internship.</p>
-        </div>
-
-        <button id="google-login-btn" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-xl px-6 py-3.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:shadow-md transition-all duration-200">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
-            Continue with Google
-        </button>
-        
-        <p id="status-message" class="mt-6 text-sm font-medium text-green-600 hidden animate-pulse">
-            Login Successful! Redirecting...
-        </p>
-    </div>
-
-    <script type="module">
-        // Import Firebase tools directly from Google's servers
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
-        // ⚠️ STEP 1: PASTE YOUR FIREBASE CONFIG HERE
-        // Replace this entire object with the one Firebase gave you
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // Turn on Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        // Connect our HTML elements to JavaScript
-        const loginBtn = document.getElementById('google-login-btn');
-        const statusMsg = document.getElementById('status-message');
-
-        // What happens when the button is clicked
-        loginBtn.addEventListener('click', () => {
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    const user = result.user;
-                    console.log("Success! Welcome: ", user.displayName);
-                    
-                    // Show success message on the UI
-                    loginBtn.classList.add('hidden');
-                    statusMsg.classList.remove('hidden');
-                    
-                    // Generate the secure token (you will send this to FastAPI later)
-                    return user.getIdToken();
-                })
-                .then((idToken) => {
-                    console.log("Secure Token ready for backend:", idToken);
-                    // Next step: Redirect to your jobs dashboard!
-                    // window.location.href = "dashboard.html"; 
-                })
-                .catch((error) => {
-                    console.error("Login Failed:", error.message);
-                    alert("Oops! Login failed: " + error.message);
-                });
-        });
-    </script>
-</body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PM Internship Portal - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex items-center justify-center h-screen font-sans">
+    <div class="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md text-center border border-gray-100">
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 tracking-tight">Welcome</h2>
+            <p class="text-gray-500 mt-2">Sign in to find your perfect internship.</p>
+        </div>
+        <button id="google-login-btn" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-xl px-6 py-3.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:shadow-md transition-all duration-200">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
+            Continue with Google
+        </button>
+        <p id="status-message" class="mt-6 text-sm font-medium text-green-600 hidden animate-pulse">
+            Login Successful! Redirecting...
+        </p>
+    </div>
+    <script type="module">
+        // Import Firebase tools directly from Google's servers
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        // ⚠️ STEP 1: PASTE YOUR FIREBASE CONFIG HERE
+        // Replace this entire object with the one Firebase gave you
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        // Turn on Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        // Connect our HTML elements to JavaScript
+        const loginBtn = document.getElementById('google-login-btn');
+        const statusMsg = document.getElementById('status-message');
+        // What happens when the button is clicked
+        loginBtn.addEventListener('click', () => {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const user = result.user;
+                    console.log("Success! Welcome: ", user.displayName);
+                    // Show success message on the UI
+                    loginBtn.classList.add('hidden');
+                    statusMsg.classList.remove('hidden');
+                    // Generate the secure token (you will send this to FastAPI later)
+                    return user.getIdToken();
+                })
+                .then((idToken) => {
+                    console.log("Secure Token ready for backend:", idToken);
+                    // Next step: Redirect to your jobs dashboard!
+                    // window.location.href = "dashboard.html"; 
+                })
+                .catch((error) => {
+                    console.error("Login Failed:", error.message);
+                    alert("Oops! Login failed: " + error.message);
+                });
+        });
+    </script>
+</body>
 </html>
