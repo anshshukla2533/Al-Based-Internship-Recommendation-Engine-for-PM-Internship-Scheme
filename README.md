@@ -14,7 +14,7 @@ The app uses **OCR** to read images/PDFs. You must install these on your Windows
 
     - Install it.
 
-    - **Crucial**: Note the installation path (usually `C:\Program Files\Tesseract-OCR\tesseract.exe`).
+    
 
 2.  **Poppler (for PDF processing)**:
 
