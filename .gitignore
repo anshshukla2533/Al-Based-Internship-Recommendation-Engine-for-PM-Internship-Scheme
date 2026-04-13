@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+node_modules/
+dist/
+.vite/
+*.mp4

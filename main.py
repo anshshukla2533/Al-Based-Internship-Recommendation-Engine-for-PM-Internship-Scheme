@@ -1,10 +1,32 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from omnidimension import Client
 from omnidimension.client import APIError
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-import pdfplumber
+try:
+
+    import pdfplumber
+
+except ImportError:
+
+    pdfplumber = None
+
+try:
+
+    from pypdf import PdfReader as ModernPdfReader
+
+except ImportError:
+
+    ModernPdfReader = None
+
+try:
+
+    from PyPDF2 import PdfReader as LegacyPdfReader
+
+except ImportError:
+
+    LegacyPdfReader = None
 import re
 import json
 import html
@@ -206,9 +228,91 @@ TARGET_SKILLS = {
     "Core_IT": ["python", "c++", "c", "java", "sql", "html", "networking", "troubleshooting"],
     "Healthcare_Basics": ["first aid", "sanitation", "patient care", "health records"]
 }
-def _clean_text(value: Any) -> str:
+COMMON_RESUME_SKILLS = [
+
+    "python",
+
+    "java",
+
+    "c++",
+
+    "c",
+
+    "sql",
+
+    "html",
+
+    "css",
+
+    "javascript",
+
+    "react",
+
+    "node.js",
+
+    "excel",
+
+    "ms office",
+
+    "powerpoint",
+
+    "word",
+
+    "data entry",
+
+    "typing",
+
+    "basic computer",
+
+    "customer service",
+
+    "sales",
+
+    "financial analysis",
+
+    "accounting",
+
+    "banking",
+
+    "research",
+
+    "field work",
+
+    "teaching",
+
+    "design",
+
+    "canva",
+
+    "photoshop",
+
+    "video editing",
+
+    "communication",
+
+    "inventory",
+
+    "dispatch",
+
+    "supply chain",
+
+    "packaging",
+
+    "networking",
+
+    "troubleshooting",
+
+    "agriculture",
+
+    "patient care",
+
+    "health records",
+
+]
+
+def _clean_text(value: Any) -> str:
     return re.sub(r"\s+", " ", str(value or "")).strip()
-def _dedupe_preserve(items: List[str]) -> List[str]:
+def _dedupe_preserve(items: List[str]) -> List[str]:
     seen = set()
     result = []
     for item in items:
@@ -217,7 +321,155 @@ def _dedupe_preserve(items: List[str]) -> List[str]:
             continue
         seen.add(key)
         result.append(item)
-    return result
+    return result
+
+def _fallback_resume_skill_candidates() -> List[str]:
+
+    candidates: List[str] = []
+
+    for skills in TARGET_SKILLS.values():
+
+        candidates.extend(skills)
+
+    candidates.extend(COMMON_RESUME_SKILLS)
+
+    try:
+
+        for job in _load_pm_jobs():
+
+            candidates.extend(_normalize_skills(job.get("skills", [])))
+
+    except Exception as e:
+
+        print(f"Resume skill fallback warning: {e}")
+
+    return _dedupe_preserve([_clean_text(skill) for skill in candidates if _clean_text(skill)])
+
+def _extract_resume_skills_fallback(text: str, limit: int = 8) -> List[str]:
+
+    source_text = text or ""
+
+    lowered = _clean_text(source_text).casefold()
+
+    if not lowered:
+
+        return []
+
+    detected: List[str] = []
+
+    explicit_blocks = re.findall(
+
+        r"(?:technical skills|core skills|key skills|skills|tools|technologies)\s*[:\-]\s*([^\n\r]{10,400})",
+
+        source_text,
+
+        flags=re.IGNORECASE,
+
+    )
+
+    for block in explicit_blocks:
+
+        for piece in re.split(r"[,|/;•]+", block):
+
+            candidate = _clean_text(piece).strip(":-")
+
+            if 2 <= len(candidate) <= 40:
+
+                detected.append(candidate)
+
+    for skill in _fallback_resume_skill_candidates():
+
+        tokens = [token for token in re.split(r"[^a-z0-9+#.]+", skill.casefold()) if token]
+
+        if not tokens:
+
+            continue
+
+        pattern = r"\b" + r"(?:[\s/&,+.-]+)".join(re.escape(token) for token in tokens) + r"\b"
+
+        if re.search(pattern, lowered) or (len(tokens) > 1 and all(token in lowered for token in tokens)):
+
+            detected.append(skill)
+
+        if len(detected) >= limit * 3:
+
+            break
+
+    blocked = {
+
+        "resume",
+
+        "curriculum vitae",
+
+        "skills",
+
+        "technical skills",
+
+        "key skills",
+
+        "tools",
+
+    }
+
+    normalized = _normalize_skills(detected)
+
+    return [skill for skill in normalized if skill.casefold() not in blocked][:limit]
+
+def _fallback_resume_questions(skills: List[str], num_questions: int = 5, used_prompts: Optional[set[str]] = None) -> List[Dict[str, Any]]:
+
+    prompts = used_prompts or set()
+
+    normalized_skills = _normalize_skills(skills) or ["workplace communication"]
+
+    generated: List[Dict[str, Any]] = []
+
+    generic_wrong_answers = [
+
+        "Skip the instructions and guess",
+
+        "Wait for someone else to finish the task",
+
+        "Ignore accuracy checks and submit quickly",
+
+        "Avoid using the required tools",
+
+    ]
+
+    for idx in range(num_questions * 3):
+
+        skill = normalized_skills[idx % len(normalized_skills)]
+
+        question = f"Which option best shows practical knowledge of {skill}?"
+
+        question_key = question.casefold()
+
+        if question_key in prompts:
+
+            continue
+
+        prompts.add(question_key)
+
+        correct = f"Use {skill} correctly to complete the assigned internship task"
+
+        options = [correct, *generic_wrong_answers[:3]]
+
+        random.SystemRandom().shuffle(options)
+
+        generated.append({
+
+            "q": question,
+
+            "options": options,
+
+            "a": correct,
+
+        })
+
+        if len(generated) >= num_questions:
+
+            break
+
+    return generated
 def _strip_code_fences(text: str) -> str:
     return (text or "").replace("```json", "").replace("```", "").strip()
 @contextmanager
@@ -319,7 +571,69 @@ def _extract_gemini_text(response_json: Dict[str, Any]) -> str:
             if text:
                 return text
     raise RuntimeError("Gemini returned no text content")
-def _normalize_language(target_language: str) -> str:
+def _extract_pdf_text(file_bytes: bytes) -> str:
+
+    extracted_versions: List[str] = []
+
+    if pdfplumber is not None:
+
+        try:
+
+            with pdfplumber.open(BytesIO(file_bytes)) as pdf:
+
+                extracted_versions.append("\n".join([(page.extract_text() or "") for page in pdf.pages]))
+
+        except Exception as e:
+
+            print(f"PDF Parsing Warning (pdfplumber): {e}")
+
+    for reader_cls, reader_name in ((ModernPdfReader, "pypdf"), (LegacyPdfReader, "PyPDF2")):
+
+        if reader_cls is None:
+
+            continue
+
+        try:
+
+            reader = reader_cls(BytesIO(file_bytes))
+
+            extracted_versions.append("\n".join([(page.extract_text() or "") for page in reader.pages]))
+
+        except Exception as e:
+
+            print(f"PDF Parsing Warning ({reader_name}): {e}")
+
+    text = max(extracted_versions, key=lambda value: len(_clean_text(value)), default="")
+
+    if len(_clean_text(text)) >= 120:
+
+        return text
+
+    try:
+
+        from pdf2image import convert_from_bytes
+
+        import pytesseract
+
+        images = convert_from_bytes(file_bytes, dpi=200, first_page=1, last_page=3)
+
+        ocr_text = "\n".join([
+
+            pytesseract.image_to_string(image) for image in images
+
+        ])
+
+        if len(_clean_text(ocr_text)) > len(_clean_text(text)):
+
+            return ocr_text
+
+    except Exception as e:
+
+        print(f"OCR Fallback Warning: {e}")
+
+    return text
+
+def _normalize_language(target_language: str) -> str:
     lowered = _clean_text(target_language).casefold()
     if lowered in {"hi", "hindi", "हिंदी"}:
         return "hi"
@@ -327,7 +641,7 @@ def _normalize_language(target_language: str) -> str:
         return "te"
     return "en"
 def _extract_pdf_text(file_bytes: bytes) -> str:
-    text = ""
+    extracted_versions: List[str] = []
     try:
         with pdfplumber.open(BytesIO(file_bytes)) as pdf:
             text = "\n".join([(page.extract_text() or "") for page in pdf.pages])
@@ -729,7 +1043,141 @@ def generate_resume_analysis(text: str, api_key: str, num_questions: int = 5) ->
     if len(questions) < num_questions:
         raise RuntimeError(f"AI returned only {len(questions)} valid questions")
     return {"skills": skills[:8], "questions": questions[:num_questions]}
-def generate_dynamic_questions(skills: List[str], api_key: str, num_questions=3):
+def generate_resume_analysis(text: str, api_key: str, num_questions: int = 5) -> Dict[str, Any]:
+
+    resume_text = _clean_text(text)
+
+    if not resume_text:
+
+        raise RuntimeError("We could not read text from this PDF. Please upload a text-based PDF or use manual skill selection.")
+
+    fallback_skills = _extract_resume_skills_fallback(text)
+
+    if not _has_llm_provider():
+
+        if fallback_skills:
+
+            return {
+
+                "skills": fallback_skills,
+
+                "questions": _fallback_resume_questions(fallback_skills, num_questions=num_questions),
+
+            }
+
+        raise RuntimeError("No AI provider configured. Add GROQ_API_KEY or GEMINI_API_KEY.")
+
+    try:
+
+        response = _call_structured(
+
+            prompt=(
+
+                f"Read the resume text and do two tasks in one response.\n"
+
+                f"1. Extract 5 to 8 strong, resume-supported skills.\n"
+
+                f"2. Generate exactly {num_questions} interview MCQs based only on those extracted skills.\n"
+
+                "Rules:\n"
+
+                "- Prefer concrete tools, technologies, methods, and job skills over soft skills.\n"
+
+                "- Every question must directly test one extracted skill.\n"
+
+                "- For each question, provide one correct answer and exactly three plausible wrong answers.\n"
+
+                "- Do not ask generic aptitude questions.\n"
+
+                "- Use short, distinct answer options.\n"
+
+                "- Avoid 'all of the above' and 'none of the above'.\n\n"
+
+                f"RESUME TEXT:\n{resume_text[:12000]}"
+
+            ),
+
+            schema_model=ResumeAnalysisResponse,
+
+            system_instruction="You extract resume-supported skills and generate matching interview MCQs in strict JSON.",
+
+            temperature=0.25,
+
+            max_output_tokens=3072,
+
+        )
+
+        skills = _normalize_skills(response.skills) or fallback_skills
+
+        if not skills:
+
+            raise RuntimeError("AI returned no usable skills")
+
+        questions: List[Dict[str, Any]] = []
+
+        seen_prompts: set[str] = set()
+
+        for item in response.questions:
+
+            try:
+
+                built_question = _build_quiz_question(item)
+
+            except Exception as e:
+
+                print(f"Resume question fallback warning: {e}")
+
+                continue
+
+            prompt_key = built_question["q"].casefold()
+
+            if prompt_key in seen_prompts:
+
+                continue
+
+            seen_prompts.add(prompt_key)
+
+            questions.append(built_question)
+
+        if len(questions) < num_questions:
+
+            questions.extend(
+
+                _fallback_resume_questions(
+
+                    skills,
+
+                    num_questions=num_questions - len(questions),
+
+                    used_prompts=seen_prompts,
+
+                )
+
+            )
+
+        if len(questions) < num_questions:
+
+            raise RuntimeError(f"AI returned only {len(questions)} valid questions")
+
+        return {"skills": skills[:8], "questions": questions[:num_questions]}
+
+    except Exception as e:
+
+        print(f"Resume analysis fallback warning: {e}")
+
+        if fallback_skills:
+
+            return {
+
+                "skills": fallback_skills,
+
+                "questions": _fallback_resume_questions(fallback_skills, num_questions=num_questions),
+
+            }
+
+        raise RuntimeError("Resume analysis failed. Please upload a clearer text-based PDF or use manual skill selection.") from e
+
+def generate_dynamic_questions(skills: List[str], api_key: str, num_questions=3):
     normalized_skills = _normalize_skills(skills)
     if not _has_llm_provider():
         raise RuntimeError("No AI provider configured. Add GROQ_API_KEY or GEMINI_API_KEY.")
@@ -1264,7 +1712,165 @@ def fetch_learning_recommendations(job_title: str, company: str, skills: List[st
     except Exception as e:
         print(f"[ERROR] fetch_learning_recommendations failed, using fallback: {e}")
     return _fallback_learning_recommendations(job_title, company, normalized_skills)
-@app.get("/")
+def _extract_pdf_text(file_bytes: bytes) -> str:
+
+    extracted_versions: List[str] = []
+
+    if pdfplumber is not None:
+
+        try:
+
+            with pdfplumber.open(BytesIO(file_bytes)) as pdf:
+
+                extracted_versions.append("\n".join([(page.extract_text() or "") for page in pdf.pages]))
+
+        except Exception as e:
+
+            print(f"PDF Parsing Warning (pdfplumber): {e}")
+
+    for reader_cls, reader_name in ((ModernPdfReader, "pypdf"), (LegacyPdfReader, "PyPDF2")):
+
+        if reader_cls is None:
+
+            continue
+
+        try:
+
+            reader = reader_cls(BytesIO(file_bytes))
+
+            extracted_versions.append("\n".join([(page.extract_text() or "") for page in reader.pages]))
+
+        except Exception as e:
+
+            print(f"PDF Parsing Warning ({reader_name}): {e}")
+
+    text = max(extracted_versions, key=lambda value: len(_clean_text(value)), default="")
+
+    if len(_clean_text(text)) >= 120:
+
+        return text
+
+    try:
+
+        from pdf2image import convert_from_bytes
+
+        import pytesseract
+
+        images = convert_from_bytes(file_bytes, dpi=200, first_page=1, last_page=3)
+
+        ocr_text = "\n".join([
+
+            pytesseract.image_to_string(image) for image in images
+
+        ])
+
+        if len(_clean_text(ocr_text)) > len(_clean_text(text)):
+
+            return ocr_text
+
+    except Exception as e:
+
+        print(f"OCR Fallback Warning: {e}")
+
+    return text
+
+def generate_dynamic_questions(skills: List[str], api_key: str, num_questions=3):
+
+    normalized_skills = _normalize_skills(skills)
+
+    if not normalized_skills:
+
+        raise RuntimeError("No skills available for question generation")
+
+    if not _has_llm_provider():
+
+        return _fallback_resume_questions(normalized_skills, num_questions=num_questions)
+
+    try:
+
+        response = _call_structured(
+
+            prompt=(
+
+                f"Create exactly {num_questions} multiple-choice interview questions based only on these skills: {', '.join(normalized_skills)}.\n"
+
+                "Rules:\n"
+
+                "- Every question must directly test one of the provided skills.\n"
+
+                "- Do not ask about skills that are not in the list.\n"
+
+                "- Make the questions realistic and interview-ready, not generic aptitude questions.\n"
+
+                "- For each question, provide one correct answer and exactly three plausible wrong answers.\n"
+
+                "- Keep each option short and distinct.\n"
+
+                "- Avoid 'all of the above' and 'none of the above'."
+
+            ),
+
+            schema_model=QuizQuestionsResponse,
+
+            system_instruction="You create precise interview MCQs and return strict JSON.",
+
+            temperature=0.35,
+
+            max_output_tokens=2048,
+
+        )
+
+        questions: List[Dict[str, Any]] = []
+
+        seen_prompts: set[str] = set()
+
+        for item in response.questions:
+
+            try:
+
+                built_question = _build_quiz_question(item)
+
+            except Exception as e:
+
+                print(f"Dynamic question fallback warning: {e}")
+
+                continue
+
+            prompt_key = built_question["q"].casefold()
+
+            if prompt_key in seen_prompts:
+
+                continue
+
+            seen_prompts.add(prompt_key)
+
+            questions.append(built_question)
+
+        if len(questions) < num_questions:
+
+            questions.extend(
+
+                _fallback_resume_questions(
+
+                    normalized_skills,
+
+                    num_questions=num_questions - len(questions),
+
+                    used_prompts=seen_prompts,
+
+                )
+
+            )
+
+        return questions[:num_questions]
+
+    except Exception as e:
+
+        print(f"Dynamic question generation fallback warning: {e}")
+
+        return _fallback_resume_questions(normalized_skills, num_questions=num_questions)
+
+@app.get("/")
 def health_check():
     return {"status": "Engine is running smoothly."}
 @app.post("/refresh-internships")
@@ -1282,11 +1888,15 @@ def refresh_pm_internships():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to refresh PM internships: {str(e)}")
 @app.post("/analyze-resume")
-async def analyze_resume(file: UploadFile = File(...), location: str = "Amaravati", education: str = "Graduate", preferred_sector: str = "Any"):
-    if not file.filename.endswith(".pdf"):
+async def analyze_resume(file: UploadFile = File(...), location: str = Form("Amaravati"), education: str = Form("Graduate"), preferred_sector: str = Form("Any")):
+    if not (file.filename or "").casefold().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
     try:
-        file_bytes = await file.read()
+        file_bytes = await file.read()
+
+        if not file_bytes:
+
+            raise HTTPException(status_code=400, detail="The uploaded PDF is empty.")
         resume_cache_key = hashlib.sha256(file_bytes).hexdigest()
         cached_analysis = RESUME_ANALYSIS_CACHE.get(resume_cache_key)
         if cached_analysis:
@@ -1318,7 +1928,7 @@ def process_manual_profile(profile: ManualProfile):
         quiz_cache_key = "|".join(skill.casefold() for skill in normalized_skills)
         quiz = QUIZ_CACHE.get(quiz_cache_key)
         if quiz is None:
-            quiz = generate_dynamic_questions(normalized_skills, groq_api_key, num_questions=5)
+            quiz = _fallback_resume_questions(normalized_skills, num_questions=5)
             QUIZ_CACHE[quiz_cache_key] = quiz
         profile_dict = {
             "location": profile.location,
