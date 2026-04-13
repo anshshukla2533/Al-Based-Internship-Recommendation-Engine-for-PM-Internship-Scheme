@@ -4,9 +4,7 @@ import {
   ChevronLeft,
   ArrowRight,
   CalendarDays,
-  FileText,
   House,
-  Loader2,
   LogIn,
   LogOut,
   MapPin,
@@ -19,6 +17,7 @@ import {
 } from "lucide-react";
 import { AIChatMentorRedesign } from "./components/AIChatMentorRedesign";
 import { InterviewSimulatorRedesign } from "./components/InterviewSimulatorRedesign";
+import { OnboardingWizard } from "./components/onboarding/OnboardingWizard";
 import { auth, onAuthStateChanged, provider, signInWithPopup, signOut } from "./firebase";
 
 const API_BASE_CANDIDATES = Array.from(new Set([
@@ -53,19 +52,6 @@ const sectorOptions = [
   { display: "🎨 Media & Arts", value: "Any" },
   { display: "🌿 Environment", value: "Any" },
   { display: "⚖️ Governance", value: "Any" },
-];
-
-const skillOptions = [
-  "Data Entry",
-  "MS Office",
-  "Basic Computer",
-  "Communication",
-  "Field Work",
-  "Coding",
-  "Design",
-  "Teaching",
-  "Sales / Marketing",
-  "Research",
 ];
 
 const educationMap = {
@@ -153,8 +139,6 @@ export default function AppHtmlMatch() {
   const [splashDone, setSplashDone] = useState(false);
   const [stuckNav, setStuckNav] = useState(false);
   const [chatEnabled, setChatEnabled] = useState(false);
-  const [uploadingResume, setUploadingResume] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [skills, setSkills] = useState([]);
   const [jobTips, setJobTips] = useState({});
@@ -172,7 +156,6 @@ export default function AppHtmlMatch() {
     sectors: [],
     skills: [],
   });
-  const fileInputRef = useRef(null);
   const apiBaseRef = useRef(API_BASE_CANDIDATES[0]);
   const statsRef = useRef(null);
   const [displayStats, setDisplayStats] = useState(stats.map(() => 0));
@@ -380,70 +363,26 @@ export default function AppHtmlMatch() {
     await signOut(auth);
   };
 
-  const buildRecommendationPayload = (verifiedSkills, educationLabel, sectorValue) => ({
-    skills: verifiedSkills,
-    location: form.state || "India (Any)",
-    education: educationMap[educationLabel] || "Graduate",
-    preferred_sector: sectorValue || "Any",
-    target_language: "English",
-    lang: "en",
-  });
+  const handleWizardMatchesReady = ({ skills: wizardSkills, matches }) => {
+    const normalizedMatches = matches.map((match, index) => ({
+      id: match.id || `wizard-match-${index + 1}`,
+      title: match.title,
+      company: match.company,
+      location: match.location,
+      field: match.mode,
+      duration: match.mode === "Remote" ? "Remote" : "2-6 months",
+      stipend: match.stipend,
+      match_score: match.matchScore,
+      matched_skills: match.skills,
+      skills: match.skills,
+      apply_url: match.applyUrl,
+      description: `${match.trustBadge}. Matched from the resume trust score with verified skills: ${match.skills.join(", ") || "profile skills"}.`,
+    }));
 
-  const fetchRecommendations = async (verifiedSkills, educationLabel, sectorValue) => {
-    const response = await postApi("/recommended-jobs", buildRecommendationPayload(verifiedSkills, educationLabel, sectorValue));
-    setJobs(response.data.top_matches || []);
-    setSkills(verifiedSkills);
-    setChatEnabled(true);
-    goToResultsPage();
-  };
-
-  const findMatches = async () => {
-    setLoading(true);
-    try {
-      const selectedSector = form.sectors[0] || "Any";
-      const response = await postApi("/manual-profile", {
-        education: educationMap[form.education] || "Graduate",
-        location: form.state || "India (Any)",
-        preferred_sector: selectedSector,
-        manual_skills: form.skills,
-      });
-      const verifiedSkills = response.data.verified_skills || form.skills;
-      await fetchRecommendations(verifiedSkills, form.education, selectedSector);
-    } catch (error) {
-      alert(getApiErrorMessage(error, "Could not fetch recommendations. Please make sure the backend is running."));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResumeUpload = async (file) => {
-    if (!file) return;
-    if (!file.name?.toLowerCase().endsWith(".pdf")) {
-      alert("Please upload a PDF resume file.");
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
-    setUploadingResume(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("location", form.state || "India (Any)");
-      formData.append("education", educationMap[form.education] || "Graduate");
-      formData.append("preferred_sector", form.sectors[0] || "Any");
-      const response = await postApi("/analyze-resume", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      const extractedSkills = response.data.extracted_skills || [];
-      if (!extractedSkills.length) {
-        throw new Error("No resume skills could be identified. Please try a clearer PDF or use manual skill selection.");
-      }
-      await fetchRecommendations(extractedSkills, form.education, form.sectors[0] || "Any");
-    } catch (error) {
-      alert(getApiErrorMessage(error, "Resume analysis failed. Please try again."));
-    } finally {
-      setUploadingResume(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    setJobs(normalizedMatches);
+    setSkills(wizardSkills);
+    setForm((prev) => ({ ...prev, skills: wizardSkills }));
+    setChatEnabled(normalizedMatches.length > 0);
   };
 
   const fetchTips = async (jobKey, job) => {
@@ -652,6 +591,17 @@ export default function AppHtmlMatch() {
 
           <div className="form-card sr">
             <div className="form-grid-inner">
+              <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg2)] p-5">
+                <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <div className="cin-tag"><span className="bar" /> Local Profile Signal</div>
+                    <h3 className="mt-2 text-xl font-black text-[var(--ink)]">Set the context for verified jobs</h3>
+                  </div>
+                  <p className="max-w-xl text-sm leading-7 text-[var(--muted)]">
+                    These details guide the matching endpoint after the trust assessment finishes.
+                  </p>
+                </div>
+
               <div className="form-row">
                 <div className="fg">
                   <label className="fl">Your Name</label>
@@ -683,29 +633,25 @@ export default function AppHtmlMatch() {
                 </div>
               </div>
 
+              <div className="mt-5">
               <div className="fg">
                 <label className="fl">Sector Interests — select all that apply</label>
                 <div className="chip-group">
                   {sectorOptions.map((item) => <button key={item.display} type="button" className={`chip ${form.sectors.includes(item.value) ? "on" : ""}`} onClick={() => toggleChip("sectors", item.value)}>{item.display}</button>)}
                 </div>
               </div>
-
-              <div className="fg">
-                <label className="fl">Your Skills — select all that apply</label>
-                <div className="chip-group">
-                  {skillOptions.map((item) => <button key={item} type="button" className={`chip ${form.skills.includes(item) ? "on" : ""}`} onClick={() => toggleChip("skills", item)}>{item}</button>)}
-                </div>
+              </div>
               </div>
 
-              <div className="form-actions-row">
-                <button type="button" className="submit-btn" id="submitBtn" disabled={loading || !form.skills.length || !form.education} onClick={findMatches}>
-                  {loading ? <><Loader2 size={18} className="spin" /> Finding internships...</> : <><span id="sbText">✦ Find My Best Internships</span></>}
-                </button>
-                <button type="button" className="upload-alt-btn" onClick={() => fileInputRef.current?.click()} disabled={uploadingResume}>
-                  {uploadingResume ? <><Loader2 size={16} className="spin" /> Reading Resume...</> : <><FileText size={16} /> Upload Resume PDF</>}
-                </button>
-                <input ref={fileInputRef} type="file" accept=".pdf" className="hidden-file" onChange={(e) => handleResumeUpload(e.target.files?.[0])} />
-              </div>
+              <OnboardingWizard
+                defaultProfile={{
+                  location: form.state || form.locationPref || "India",
+                  education: educationMap[form.education] || "Graduate",
+                  preferredSector: form.sectors[0] || "Any",
+                }}
+                onMatchesReady={handleWizardMatchesReady}
+                onOpenMatches={goToResultsPage}
+              />
             </div>
           </div>
         </div>

@@ -6,3 +6,7 @@ node_modules/
 dist/
 .vite/
 *.mp4
+.env
+.env.txt
+.env.local
+*.log

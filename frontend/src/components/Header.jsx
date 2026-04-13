@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Globe, LogOut } from 'lucide-react';
 export const Header = ({ language, selectLanguage, user, onLogout }) => {
     const languageOptions = [
@@ -9,7 +8,6 @@ export const Header = ({ language, selectLanguage, user, onLogout }) => {
         { code: "Telugu", label: "Telugu" },
         { code: "Tamil", label: "Tamil" },
     ];
-    const langs = ["English", "हिंदी (Hindi)", "मराठी (Marathi)", "తెలుగు (Telugu)", "தமிழ் (Tamil)"];
     return (
         <header className="w-full flex justify-between items-center py-6 px-6 md:px-12 z-50 relative">
             <div className="font-pixel tracking-widest text-lg md:text-xl text-white drop-shadow-lg cursor-pointer hover:scale-105 transition-transform">

@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 @theme {
   --color-neon: #FF5500;
   --font-pixel: "Press Start 2P", cursive;

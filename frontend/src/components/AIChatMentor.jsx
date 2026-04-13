@@ -30,7 +30,7 @@ export const AIChatMentor = ({ skills, language }) => {
                 target_language: language
             });
             setMessages([...newMsgs, { role: "assistant", content: res.data?.reply?.trim() || "I am here with you. Ask me one interview or resume question and we will solve it together." }]);
-        } catch(e) {
+        } catch {
             setMessages([...newMsgs, { role: "assistant", content: "I hit a small connection issue, but you can ask again right away. Try something like: 'Give me one interview answer for my skills.'" }]);
         } finally {
             setIsSending(false);

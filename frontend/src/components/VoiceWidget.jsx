@@ -80,7 +80,7 @@ export function VoiceWidget() {
           resolvedAgentId,
           widgetUrl,
         });
-      } catch (error) {
+      } catch (error) {
         if (ignore) {
           return;
         }
@@ -132,7 +132,7 @@ export function VoiceWidget() {
                   : "The browser will ask for microphone access when the voice call starts.",
           });
         };
-      } catch (error) {
+      } catch {
         setMicPermission({
           state: "unknown",
           detail: "Could not read browser microphone permission status.",

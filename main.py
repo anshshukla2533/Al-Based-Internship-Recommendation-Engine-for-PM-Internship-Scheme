@@ -571,96 +571,7 @@ def _extract_gemini_text(response_json: Dict[str, Any]) -> str:
             if text:
                 return text
     raise RuntimeError("Gemini returned no text content")
-def _extract_pdf_text(file_bytes: bytes) -> str:
 
-    extracted_versions: List[str] = []
-
-    if pdfplumber is not None:
-
-        try:
-
-            with pdfplumber.open(BytesIO(file_bytes)) as pdf:
-
-                extracted_versions.append("\n".join([(page.extract_text() or "") for page in pdf.pages]))
-
-        except Exception as e:
-
-            print(f"PDF Parsing Warning (pdfplumber): {e}")
-
-    for reader_cls, reader_name in ((ModernPdfReader, "pypdf"), (LegacyPdfReader, "PyPDF2")):
-
-        if reader_cls is None:
-
-            continue
-
-        try:
-
-            reader = reader_cls(BytesIO(file_bytes))
-
-            extracted_versions.append("\n".join([(page.extract_text() or "") for page in reader.pages]))
-
-        except Exception as e:
-
-            print(f"PDF Parsing Warning ({reader_name}): {e}")
-
-    text = max(extracted_versions, key=lambda value: len(_clean_text(value)), default="")
-
-    if len(_clean_text(text)) >= 120:
-
-        return text
-
-    try:
-
-        from pdf2image import convert_from_bytes
-
-        import pytesseract
-
-        images = convert_from_bytes(file_bytes, dpi=200, first_page=1, last_page=3)
-
-        ocr_text = "\n".join([
-
-            pytesseract.image_to_string(image) for image in images
-
-        ])
-
-        if len(_clean_text(ocr_text)) > len(_clean_text(text)):
-
-            return ocr_text
-
-    except Exception as e:
-
-        print(f"OCR Fallback Warning: {e}")
-
-    return text
-
-def _normalize_language(target_language: str) -> str:
-    lowered = _clean_text(target_language).casefold()
-    if lowered in {"hi", "hindi", "हिंदी"}:
-        return "hi"
-    if lowered in {"te", "telugu", "తెలుగు"}:
-        return "te"
-    return "en"
-def _extract_pdf_text(file_bytes: bytes) -> str:
-    extracted_versions: List[str] = []
-    try:
-        with pdfplumber.open(BytesIO(file_bytes)) as pdf:
-            text = "\n".join([(page.extract_text() or "") for page in pdf.pages])
-    except Exception as e:
-        print(f"PDF Parsing Warning: {e}")
-    if len(_clean_text(text)) >= 250:
-        return text
-    try:
-        from pdf2image import convert_from_bytes
-        import pytesseract
-        images = convert_from_bytes(file_bytes, dpi=200, first_page=1, last_page=3)
-        ocr_text = "\n".join([
-            pytesseract.image_to_string(image) for image in images
-        ])
-        if len(_clean_text(ocr_text)) > len(_clean_text(text)):
-            return ocr_text
-    except Exception as e:
-        print(f"OCR Fallback Warning: {e}")
-    return text
 def _normalize_language(target_language: str) -> str:
     lowered = _clean_text(target_language).casefold()
     mapping = {
@@ -1003,46 +914,7 @@ def extract_skills_with_ai(text: str, api_key: str) -> List[str]:
     except Exception as e:
         print(f"LLM Extraction Error: {e}")
         raise RuntimeError("Skill extraction failed") from e
-def generate_resume_analysis(text: str, api_key: str, num_questions: int = 5) -> Dict[str, Any]:
-    if not _has_llm_provider():
-        raise RuntimeError("No AI provider configured. Add GROQ_API_KEY or GEMINI_API_KEY.")
-    resume_text = _clean_text(text)
-    if not resume_text:
-        raise RuntimeError("Could not extract readable text from the PDF")
-    response = _call_structured(
-        prompt=(
-            f"Read the resume text and do two tasks in one response.\n"
-            f"1. Extract 5 to 8 strong, resume-supported skills.\n"
-            f"2. Generate exactly {num_questions} interview MCQs based only on those extracted skills.\n"
-            "Rules:\n"
-            "- Prefer concrete tools, technologies, methods, and job skills over soft skills.\n"
-            "- Every question must directly test one extracted skill.\n"
-            "- For each question, provide one correct answer and exactly three plausible wrong answers.\n"
-            "- Do not ask generic aptitude questions.\n"
-            "- Use short, distinct answer options.\n"
-            "- Avoid 'all of the above' and 'none of the above'.\n\n"
-            f"RESUME TEXT:\n{resume_text[:12000]}"
-        ),
-        schema_model=ResumeAnalysisResponse,
-        system_instruction="You extract resume-supported skills and generate matching interview MCQs in strict JSON.",
-        temperature=0.25,
-        max_output_tokens=3072,
-    )
-    skills = _normalize_skills(response.skills)
-    if not skills:
-        raise RuntimeError("AI returned no usable skills")
-    questions: List[Dict[str, Any]] = []
-    seen_prompts = set()
-    for item in response.questions:
-        built_question = _build_quiz_question(item)
-        prompt_key = built_question["q"].casefold()
-        if prompt_key in seen_prompts:
-            continue
-        seen_prompts.add(prompt_key)
-        questions.append(built_question)
-    if len(questions) < num_questions:
-        raise RuntimeError(f"AI returned only {len(questions)} valid questions")
-    return {"skills": skills[:8], "questions": questions[:num_questions]}
+
 def generate_resume_analysis(text: str, api_key: str, num_questions: int = 5) -> Dict[str, Any]:
 
     resume_text = _clean_text(text)
@@ -1177,40 +1049,7 @@ def generate_resume_analysis(text: str, api_key: str, num_questions: int = 5) ->
 
         raise RuntimeError("Resume analysis failed. Please upload a clearer text-based PDF or use manual skill selection.") from e
 
-def generate_dynamic_questions(skills: List[str], api_key: str, num_questions=3):
-    normalized_skills = _normalize_skills(skills)
-    if not _has_llm_provider():
-        raise RuntimeError("No AI provider configured. Add GROQ_API_KEY or GEMINI_API_KEY.")
-    if not normalized_skills:
-        raise RuntimeError("No skills available for question generation")
-    response = _call_structured(
-        prompt=(
-            f"Create exactly {num_questions} multiple-choice interview questions based only on these skills: {', '.join(normalized_skills)}.\n"
-            "Rules:\n"
-            "- Every question must directly test one of the provided skills.\n"
-            "- Do not ask about skills that are not in the list.\n"
-            "- Make the questions realistic and interview-ready, not generic aptitude questions.\n"
-            "- For each question, provide one correct answer and exactly three plausible wrong answers.\n"
-            "- Keep each option short and distinct.\n"
-            "- Avoid 'all of the above' and 'none of the above'."
-        ),
-        schema_model=QuizQuestionsResponse,
-        system_instruction="You create precise interview MCQs and return strict JSON.",
-        temperature=0.35,
-        max_output_tokens=2048,
-    )
-    questions: List[Dict[str, Any]] = []
-    seen_prompts = set()
-    for item in response.questions:
-        built_question = _build_quiz_question(item)
-        prompt_key = built_question["q"].casefold()
-        if prompt_key in seen_prompts:
-            continue
-        seen_prompts.add(prompt_key)
-        questions.append(built_question)
-    if len(questions) < num_questions:
-        raise RuntimeError(f"AI returned only {len(questions)} valid questions")
-    return questions[:num_questions]
+
 CITY_TO_STATE = {
     "mumbai": "maharashtra",
     "pune": "maharashtra",

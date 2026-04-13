@@ -224,7 +224,7 @@ function App() {
 
       setUi(res.data.translated_payload || defaultUIStrings);
 
-    } catch (e) {
+    } catch {
 
       console.error("Translation failed, using English.");
 
