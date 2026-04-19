@@ -4,12 +4,18 @@ import { Globe, LogOut } from 'lucide-react';
 export const Header = ({ language, selectLanguage, user, onLogout }) => {
     const languageOptions = [
         { code: "English", label: "English" },
-        { code: "Hindi", label: "Hindi" },
-        { code: "Marathi", label: "Marathi" },
-        { code: "Telugu", label: "Telugu" },
-        { code: "Tamil", label: "Tamil" },
+        { code: "Hindi", label: "हिन्दी" },
+        { code: "Telugu", label: "తెలుగు" },
+        { code: "Tamil", label: "தமிழ்" },
+        { code: "Bengali", label: "বাংলা" },
+        { code: "Marathi", label: "मराठी" },
+        { code: "Gujarati", label: "ગુજરાતી" },
+        { code: "Punjabi", label: "ਪੰਜਾਬੀ" },
+        { code: "Kannada", label: "ಕನ್ನಡ" },
+        { code: "Malayalam", label: "മലയാളം" },
+        { code: "Odia", label: "ଓଡ଼ିଆ" },
+        { code: "Assamese", label: "অসমীয়া" },
     ];
-    const langs = ["English", "हिंदी (Hindi)", "मराठी (Marathi)", "తెలుగు (Telugu)", "தமிழ் (Tamil)"];
     return (
         <header className="w-full flex justify-between items-center py-6 px-6 z-50 relative">
             <div className="font-pixel tracking-widest text-md text-white drop-shadow-md">

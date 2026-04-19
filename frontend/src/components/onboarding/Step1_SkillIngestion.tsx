@@ -54,6 +54,14 @@ export function Step1_SkillIngestion({
       const parsed = await parseResumeWithOcr(file);
       mergeSkills(parsed.skills);
       onResumeTextExtracted(parsed.resumeText || "");
+      if (parsed.githubUrl || parsed.linkedinUrl || parsed.email) {
+        onProfileSignalsChange({
+          ...profileSignals,
+          githubUrl: parsed.githubUrl || profileSignals.githubUrl,
+          linkedinUrl: parsed.linkedinUrl || profileSignals.linkedinUrl,
+          email: parsed.email || profileSignals.email,
+        });
+      }
     } finally {
       setIsParsing(false);
       if (fileRef.current) fileRef.current.value = "";

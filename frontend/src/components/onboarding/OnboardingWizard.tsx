@@ -13,6 +13,7 @@ import {
 import { Step1_SkillIngestion } from "./Step1_SkillIngestion";
 import { Step2_Assessment } from "./Step2_Assessment";
 import { Step3_ResultsDashboard } from "./Step3_ResultsDashboard";
+import { LanguageSelector } from "./LanguageSelector";
 import type { InternshipMatch, OnboardingProfile, StageScores, WizardResults, WizardStep } from "./types";
 
 type OnboardingWizardProps = {
@@ -55,6 +56,7 @@ export function OnboardingWizard({ defaultProfile, onMatchesReady, onOpenMatches
     email: defaultProfile?.email || "",
     targetRole: defaultProfile?.targetRole || "PM Internship",
   });
+  const [currentLang, setCurrentLang] = useState("en");
 
   const profile = useMemo<OnboardingProfile>(
     () => ({
@@ -91,7 +93,7 @@ export function OnboardingWizard({ defaultProfile, onMatchesReady, onOpenMatches
       fetchCourseRecommendations(skills, weakSkills),
       fetchInternshipMatches(skills, profile),
       generateAnalytics(skills, nextScores.total, nextScores.cheatingScore || 0),
-      computeTrustAssessment(profile, skills, nextScores.total, nextScores.cheatingScore || 0),
+      computeTrustAssessment(profile, skills, nextScores.total, nextScores.cheatingScore || 0, resumeText),
       fetchResumeImprover(resumeText, skills, profileSignals.targetRole || "PM Internship"),
     ]);
 
@@ -140,10 +142,13 @@ export function OnboardingWizard({ defaultProfile, onMatchesReady, onOpenMatches
           </p>
         </div>
 
-        <div className="grid gap-2 rounded-3xl border border-[var(--border)] bg-white/80 p-4 text-xs font-black uppercase tracking-[0.18em] text-slate-600 dark:bg-black/20 dark:text-slate-300">
+        <div className="flex flex-col items-end gap-3">
+          <LanguageSelector currentLang={currentLang} onLanguageChange={setCurrentLang} />
+          <div className="grid gap-2 rounded-3xl border border-[var(--border)] bg-white/80 p-4 text-xs font-black uppercase tracking-[0.18em] text-slate-600 dark:bg-black/20 dark:text-slate-300">
           <div className="flex justify-between gap-6"><span>Location</span><strong>{profile.location}</strong></div>
           <div className="flex justify-between gap-6"><span>Education</span><strong>{profile.education}</strong></div>
           <div className="flex justify-between gap-6"><span>Sector</span><strong>{profile.preferredSector}</strong></div>
+          </div>
         </div>
       </div>
 

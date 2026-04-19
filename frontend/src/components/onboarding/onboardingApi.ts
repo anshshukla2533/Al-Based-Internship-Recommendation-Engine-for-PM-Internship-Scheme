@@ -111,7 +111,7 @@ async function postForm<TResponse>(path: string, formData: FormData): Promise<TR
   throw lastError;
 }
 
-export async function parseResumeWithOcr(file: File): Promise<{ skills: string[]; resumeText: string }> {
+export async function parseResumeWithOcr(file: File): Promise<{ skills: string[]; resumeText: string; githubUrl?: string; linkedinUrl?: string; email?: string; }> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("location", "India");
@@ -119,9 +119,15 @@ export async function parseResumeWithOcr(file: File): Promise<{ skills: string[]
   formData.append("preferred_sector", "Any");
 
   try {
-    const response = await postForm<{ extracted_skills?: string[]; skills?: string[]; resume_text?: string }>("/analyze-resume", formData);
+    const response = await postForm<{ extracted_skills?: string[]; skills?: string[]; resume_text?: string; github_url?: string; linkedin_url?: string; email?: string }>("/analyze-resume", formData);
     const skills = response.extracted_skills || response.skills || [];
-    if (skills.length) return { skills, resumeText: String(response.resume_text || "") };
+    if (skills.length) return { 
+      skills, 
+      resumeText: String(response.resume_text || ""),
+      githubUrl: response.github_url || undefined,
+      linkedinUrl: response.linkedin_url || undefined,
+      email: response.email || undefined,
+    };
   } catch {
     await sleep(850);
   }
@@ -320,6 +326,7 @@ export async function computeTrustAssessment(
   skills: string[],
   totalScore: number,
   cheatingScore: number,
+  resumeText?: string,
 ): Promise<{
   trustScore: number;
   trustLevel: string;
@@ -339,6 +346,7 @@ export async function computeTrustAssessment(
       github_url: profile.githubUrl || "",
       linkedin_url: profile.linkedinUrl || "",
       email: profile.email || "",
+      resume_text: resumeText || "",
     });
 
     return {

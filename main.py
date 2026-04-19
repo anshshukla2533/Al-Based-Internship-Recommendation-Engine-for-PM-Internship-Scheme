@@ -472,6 +472,12 @@ class ResumeAnalysisResponse(BaseModel):
 
     questions: List[QuizQuestionDraft]
 
+    github_url: Optional[str] = None
+
+    linkedin_url: Optional[str] = None
+
+    email: Optional[str] = None
+
 class LearningRecommendationDraft(BaseModel):
 
     title: str
@@ -557,6 +563,8 @@ class TrustScoreRequest(BaseModel):
     linkedin_url: Optional[str] = None
 
     email: Optional[str] = None
+
+    resume_text: Optional[str] = None
 
 class ResumeImproverRequest(BaseModel):
 
@@ -694,6 +702,20 @@ def _ensure_absolute_url(url: str, default_scheme: str = "https") -> str:
     if not normalized.netloc:
         return ""
     return candidate
+
+def _extract_links_from_text(text: str) -> Dict[str, Optional[str]]:
+    """Regex fallback to extract GitHub URL, LinkedIn URL, and email from raw text."""
+    result: Dict[str, Optional[str]] = {"github_url": None, "linkedin_url": None, "email": None}
+    github_match = re.search(r'https?://(?:www\.)?github\.com/[A-Za-z0-9_.-]+', text)
+    if github_match:
+        result["github_url"] = github_match.group(0)
+    linkedin_match = re.search(r'https?://(?:www\.)?linkedin\.com/in/[A-Za-z0-9_.-]+', text)
+    if linkedin_match:
+        result["linkedin_url"] = linkedin_match.group(0)
+    email_match = re.search(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', text)
+    if email_match:
+        result["email"] = email_match.group(0)
+    return result
 
 def _dedupe_preserve(items: List[str]) -> List[str]:
     seen = set()
@@ -1286,6 +1308,48 @@ def _normalize_language(target_language: str) -> str:
         "தமிழ்": "ta",
 
         "தமிழ் (tamil)": "ta",
+
+        "bn": "bn",
+
+        "bengali": "bn",
+
+        "বাংলা": "bn",
+
+        "gu": "gu",
+
+        "gujarati": "gu",
+
+        "ગુજરાતી": "gu",
+
+        "pa": "pa",
+
+        "punjabi": "pa",
+
+        "ਪੰਜਾਬੀ": "pa",
+
+        "kn": "kn",
+
+        "kannada": "kn",
+
+        "ಕನ್ನಡ": "kn",
+
+        "ml": "ml",
+
+        "malayalam": "ml",
+
+        "മലയാളം": "ml",
+
+        "or": "or",
+
+        "odia": "or",
+
+        "ଓଡ଼ିଆ": "or",
+
+        "as": "as",
+
+        "assamese": "as",
+
+        "অসমীয়া": "as",
 
     }
 
@@ -1960,11 +2024,13 @@ def generate_resume_analysis(text: str, api_key: str, num_questions: int = DEFAU
 
             prompt=(
 
-                f"Read the resume text and do two tasks in one response.\n"
+                f"Read the resume text and do three tasks in one response.\n"
 
                 f"1. Extract 5 to 8 strong, resume-supported skills.\n"
 
                 f"2. Generate exactly {num_questions} interview MCQs based only on those extracted skills.\n"
+
+                f"3. Extract the candidate's GitHub URL, LinkedIn URL, and email address if present in the text.\n"
 
                 "Rules:\n"
 
@@ -1986,7 +2052,7 @@ def generate_resume_analysis(text: str, api_key: str, num_questions: int = DEFAU
 
             schema_model=ResumeAnalysisResponse,
 
-            system_instruction="You extract resume-supported skills and generate matching interview MCQs in strict JSON.",
+            system_instruction="You extract resume-supported skills, generate matching interview MCQs, and extract contact URLs/emails in strict JSON.",
 
             temperature=0.25,
 
@@ -2046,7 +2112,24 @@ def generate_resume_analysis(text: str, api_key: str, num_questions: int = DEFAU
 
             raise RuntimeError(f"AI returned only {len(questions)} valid questions")
 
-        return {"skills": skills[:8], "questions": questions[:num_questions]}
+        extracted_github = response.github_url
+        extracted_linkedin = response.linkedin_url
+        extracted_email = response.email
+        if not extracted_github or not extracted_linkedin or not extracted_email:
+            regex_links = _extract_links_from_text(resume_text)
+            if not extracted_github:
+                extracted_github = regex_links.get("github_url")
+            if not extracted_linkedin:
+                extracted_linkedin = regex_links.get("linkedin_url")
+            if not extracted_email:
+                extracted_email = regex_links.get("email")
+        return {
+            "skills": skills[:8],
+            "questions": questions[:num_questions],
+            "github_url": extracted_github,
+            "linkedin_url": extracted_linkedin,
+            "email": extracted_email
+        }
 
     except Exception as e:
 
@@ -3833,6 +3916,9 @@ async def analyze_resume(file: UploadFile = File(...), location: str = Form("Ama
                     "profile_dict": {"location": location, "education": education, "preferred_sector": preferred_sector},
                     "warning": "Low text extraction from file. Returned fallback skills and questions.",
                     "resume_text": "",
+                    "github_url": None,
+                    "linkedin_url": None,
+                    "email": None,
                 }
 
             analysis = generate_resume_analysis(text, groq_api_key, num_questions=DEFAULT_RESUME_QUIZ_QUESTION_COUNT)
@@ -3859,6 +3945,12 @@ async def analyze_resume(file: UploadFile = File(...), location: str = Form("Ama
             "profile_dict": {"location": location, "education": education, "preferred_sector": preferred_sector},
 
             "resume_text": resume_text[:12000],
+
+            "github_url": analysis.get("github_url"),
+
+            "linkedin_url": analysis.get("linkedin_url"),
+
+            "email": analysis.get("email"),
 
         }
 
@@ -4230,6 +4322,34 @@ def compute_trust_score(request: TrustScoreRequest):
         except Exception as e:
 
             github_summary = {"error": str(e), "github_username": github_username}
+
+    resume_project_match = 0
+    resume_matched_repos: List[str] = []
+    if github_username and _clean_text(request.resume_text) and github_summary.get("repo_count", 0) > 0:
+        try:
+            repos = _github_api_get(
+                f"https://api.github.com/users/{github_username}/repos",
+                params={"per_page": 50, "sort": "updated"},
+            )
+            resume_lower = _clean_text(request.resume_text).lower()
+            for repo in (repos if isinstance(repos, list) else []):
+                repo_name = _clean_text(repo.get("name", "")).lower().replace("-", " ").replace("_", " ")
+                repo_desc = _clean_text(repo.get("description", "")).lower()
+                if len(repo_name) > 3 and repo_name in resume_lower:
+                    resume_matched_repos.append(repo.get("name", ""))
+                elif len(repo_desc) > 10:
+                    desc_words = [w for w in repo_desc.split() if len(w) > 4]
+                    match_count = sum(1 for w in desc_words if w in resume_lower)
+                    if match_count >= 3:
+                        resume_matched_repos.append(repo.get("name", ""))
+            if resume_matched_repos:
+                resume_project_match = min(100, len(resume_matched_repos) * 25)
+                github_score = min(100, github_score + resume_project_match // 3)
+                github_summary["resume_matched_repos"] = resume_matched_repos[:10]
+                github_summary["resume_project_match_bonus"] = resume_project_match
+                github_summary["confidence_score"] = github_score
+        except Exception as e:
+            print(f"Resume-GitHub project match error: {e}")
 
     linkedin_summary = _linkedin_signal(request.linkedin_url)
 

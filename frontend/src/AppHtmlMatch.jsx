@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ArrowRight,
   CalendarDays,
+  Globe,
   House,
   LogIn,
   LogOut,
@@ -149,6 +150,22 @@ export default function AppHtmlMatch() {
   const [interviewOpen, setInterviewOpen] = useState(false);
   const [activeJob, setActiveJob] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [currentLang, setCurrentLang] = useState("en");
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const LANGUAGES = [
+    { code: "en", label: "English", native: "English" },
+    { code: "hi", label: "Hindi", native: "हिन्दी" },
+    { code: "te", label: "Telugu", native: "తెలుగు" },
+    { code: "ta", label: "Tamil", native: "தமிழ்" },
+    { code: "bn", label: "Bengali", native: "বাংলা" },
+    { code: "mr", label: "Marathi", native: "मराठी" },
+    { code: "gu", label: "Gujarati", native: "ગુજરાતી" },
+    { code: "pa", label: "Punjabi", native: "ਪੰਜਾਬੀ" },
+    { code: "kn", label: "Kannada", native: "ಕನ್ನಡ" },
+    { code: "ml", label: "Malayalam", native: "മലയാളം" },
+    { code: "or", label: "Odia", native: "ଓଡ଼ିଆ" },
+    { code: "as", label: "Assamese", native: "অসমীয়া" },
+  ];
   const [form, setForm] = useState({
     name: "",
     state: "",
@@ -452,6 +469,24 @@ export default function AppHtmlMatch() {
           <li><a href="#features" onClick={(e) => { e.preventDefault(); openHomeSection("features"); }}>Features</a></li>
         </ul>
         <div className="nav-actions">
+          <div style={{ position: 'relative' }}>
+            <button type="button" className="theme-toggle" onClick={() => setLangDropdownOpen(!langDropdownOpen)} title="Change Language">
+              <Globe size={16} />
+            </button>
+            {langDropdownOpen && (
+              <>
+                <div style={{ position: 'fixed', inset: 0, zIndex: 90 }} onClick={() => setLangDropdownOpen(false)} />
+                <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: '8px', width: '220px', maxHeight: '320px', overflowY: 'auto', borderRadius: '16px', border: '1px solid var(--border)', background: 'var(--bg2)', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', zIndex: 100, padding: '6px' }}>
+                  {LANGUAGES.map((lang) => (
+                    <button key={lang.code} type="button" onClick={() => { setCurrentLang(lang.code); setLangDropdownOpen(false); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '10px 14px', borderRadius: '12px', border: 'none', background: currentLang === lang.code ? 'rgba(255,115,0,0.12)' : 'transparent', color: currentLang === lang.code ? '#c2410c' : 'var(--ink)', fontWeight: currentLang === lang.code ? 800 : 500, fontSize: '0.88rem', cursor: 'pointer', transition: 'background 0.15s' }}>
+                      <span>{lang.native}</span>
+                      <span style={{ fontSize: '0.72rem', opacity: 0.5 }}>{lang.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <button type="button" className="theme-toggle" onClick={toggleTheme}>
             {theme === "dark" ? <SunMedium size={16} /> : <MoonStar size={16} />}
           </button>

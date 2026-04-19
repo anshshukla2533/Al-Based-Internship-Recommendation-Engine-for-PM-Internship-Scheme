@@ -50,11 +50,25 @@ const LANGUAGE_CHOICES = [
 
   { code: "Hindi", label: "Hindi", lang: "hi" },
 
-  { code: "Marathi", label: "Marathi", lang: "mr" },
-
   { code: "Telugu", label: "Telugu", lang: "te" },
 
   { code: "Tamil", label: "Tamil", lang: "ta" },
+
+  { code: "Bengali", label: "Bengali", lang: "bn" },
+
+  { code: "Marathi", label: "Marathi", lang: "mr" },
+
+  { code: "Gujarati", label: "Gujarati", lang: "gu" },
+
+  { code: "Punjabi", label: "Punjabi", lang: "pa" },
+
+  { code: "Kannada", label: "Kannada", lang: "kn" },
+
+  { code: "Malayalam", label: "Malayalam", lang: "ml" },
+
+  { code: "Odia", label: "Odia", lang: "or" },
+
+  { code: "Assamese", label: "Assamese", lang: "as" },
 
 ];
 
