@@ -588,9 +588,11 @@ function App() {
 
     <div className="min-h-screen bg-black w-full font-sans text-white flex flex-col items-center selection:bg-neon selection:text-black">
 
-      <video autoPlay loop muted playsInline className="fixed top-0 left-0 w-full h-full object-cover z-0 opacity-60 pointer-events-none"><source src=":\Users\shubh\OneDrive\Documents\vscode\python project\Futuristic_Data_Node_Animation.mp4" type="video/mp4"/></video>
-
-      <div className="fixed top-0 left-0 w-full h-full bg-black/30 z-0 pointer-events-none"></div>
+      <div className="fixed top-0 left-0 w-full h-full z-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
+        <div className="absolute inset-0 opacity-30" style={{background: 'radial-gradient(ellipse at 20% 50%, rgba(255,85,0,0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(99,102,241,0.1) 0%, transparent 50%)', animation: 'float 8s ease-in-out infinite'}} />
+        <div className="absolute top-0 left-0 w-full h-full opacity-[0.03]" style={{backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '50px 50px'}} />
+      </div>
 
       <div className="w-full max-w-md bg-transparent min-h-screen flex flex-col relative shadow-2xl z-10">
 

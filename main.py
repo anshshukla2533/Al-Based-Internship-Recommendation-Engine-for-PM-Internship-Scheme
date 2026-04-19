@@ -93,6 +93,14 @@ except ImportError:
 
     DocxDocument = None
 
+try:
+
+    from firecrawl import FirecrawlApp
+
+except ImportError:
+
+    FirecrawlApp = None
+
 DEFAULT_JOBS_JSON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "jobs.json")
 
 try:
@@ -192,6 +200,30 @@ groq_api_key = os.getenv("GROQ_API_KEY")
 omnidim_api_key = os.getenv("OMNIDIMENSION_API_KEY")
 
 agent_id = os.getenv("OMNIDIMENSION_AGENT_ID")
+
+firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
+
+firecrawl_client = None
+
+if firecrawl_api_key and FirecrawlApp is not None:
+
+    try:
+
+        firecrawl_client = FirecrawlApp(api_key=firecrawl_api_key)
+
+        print("[STARTUP] Firecrawl client initialized.")
+
+    except Exception as e:
+
+        print(f"[STARTUP] WARNING: Firecrawl init failed: {e}")
+
+elif firecrawl_api_key and FirecrawlApp is None:
+
+    print("[STARTUP] WARNING: FIRECRAWL_API_KEY is present but firecrawl-py is not installed.")
+
+else:
+
+    print("[STARTUP] WARNING: No FIRECRAWL_API_KEY found in .env.txt")
 
 class ProxySafeOmniClient(Client if Client is not None else object):
 
@@ -2573,6 +2605,8 @@ def _fetch_internshala_internships(user_profile: Dict[str, Any], user_skills: Li
 
     seen = set()
 
+    use_firecrawl = firecrawl_client is not None
+
     session = requests.Session()
 
     session.trust_env = False
@@ -2589,15 +2623,35 @@ def _fetch_internshala_internships(user_profile: Dict[str, Any], user_skills: Li
 
         try:
 
-            with _disable_proxy_env():
+            page_html = None
 
-                response = session.get(url, headers=headers, timeout=30)
+            if use_firecrawl:
 
-            if response.status_code != 200:
+                try:
 
-                continue
+                    fc_result = _firecrawl_scrape(url, formats=["html"])
 
-            parsed = _parse_internshala_listings(response.text, _clean_text(user_profile.get("preferred_sector")) or "General")
+                    page_html = fc_result.get("html") or fc_result.get("content") or ""
+
+                    print(f"[Firecrawl] Scraped {url} ({len(page_html)} chars)")
+
+                except Exception as fc_err:
+
+                    print(f"[Firecrawl] Failed for {url}, falling back to requests: {fc_err}")
+
+            if not page_html:
+
+                with _disable_proxy_env():
+
+                    response = session.get(url, headers=headers, timeout=30)
+
+                if response.status_code != 200:
+
+                    continue
+
+                page_html = response.text
+
+            parsed = _parse_internshala_listings(page_html, _clean_text(user_profile.get("preferred_sector")) or "General")
 
             for listing in parsed:
 
@@ -2846,6 +2900,48 @@ def translate_text_lightweight(text: str, dest_lang: str) -> str:
         print(f"Translation error: {e}")
 
     return text
+
+def _firecrawl_scrape(url: str, *, formats: Optional[List[str]] = None, timeout: int = 30000) -> Dict[str, Any]:
+
+    """Scrape a URL using Firecrawl and return structured content."""
+
+    if not firecrawl_client:
+
+        raise RuntimeError("Firecrawl client is not initialized. Check FIRECRAWL_API_KEY.")
+
+    scrape_formats = formats or ["markdown", "html"]
+
+    try:
+
+        with _disable_proxy_env():
+
+            result = firecrawl_client.scrape_url(
+
+                url,
+
+                params={"formats": scrape_formats, "timeout": timeout},
+
+            )
+
+        if isinstance(result, dict):
+
+            return result
+
+        return {"markdown": str(result), "metadata": {"url": url}}
+
+    except Exception as e:
+
+        print(f"Firecrawl scrape error for {url}: {e}")
+
+        raise RuntimeError(f"Firecrawl scrape failed: {e}") from e
+
+def _firecrawl_scrape_text(url: str) -> str:
+
+    """Scrape a URL using Firecrawl and return just the markdown text."""
+
+    result = _firecrawl_scrape(url, formats=["markdown"])
+
+    return _clean_text(result.get("markdown") or result.get("content") or "")
 
 def _fallback_interview_prep(
     job_title: str,
@@ -5288,3 +5384,30 @@ async def resume_improver(request: ResumeImproverRequest):
         "suggestions": suggestions_data.get("suggestions", []),
         "target_role": request.target_role or "PM Internship",
     }
+
+class ScrapeRequest(BaseModel):
+    url: str
+    formats: Optional[List[str]] = None
+
+@app.post("/firecrawl-scrape")
+async def firecrawl_scrape_endpoint(request: ScrapeRequest):
+    """Scrape any URL using Firecrawl and return structured content."""
+    if not firecrawl_client:
+        raise HTTPException(
+            status_code=503,
+            detail="Firecrawl is not configured. Add FIRECRAWL_API_KEY to .env.txt and install firecrawl-py.",
+        )
+    cleaned_url = _ensure_absolute_url(_clean_text(request.url))
+    if not cleaned_url:
+        raise HTTPException(status_code=400, detail="Invalid URL provided.")
+    try:
+        result = _firecrawl_scrape(cleaned_url, formats=request.formats)
+        return {
+            "success": True,
+            "url": cleaned_url,
+            "markdown": result.get("markdown", ""),
+            "html": result.get("html", ""),
+            "metadata": result.get("metadata", {}),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))

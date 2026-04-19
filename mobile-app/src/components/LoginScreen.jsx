@@ -32,11 +32,11 @@ export const LoginScreen = () => {
 
     <div className="bg-black flex items-center justify-center min-h-screen w-full max-w-md mx-auto relative z-50 overflow-hidden font-sans">
 
-        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-60">
-
-          <source src="C:\Users\shubh\OneDrive\Documents\vscode\python project\Futuristic_Data_Node_Animation.mp4" type="video/mp4"/>
-
-        </video>
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
+          <div className="absolute inset-0 opacity-30" style={{background: 'radial-gradient(ellipse at 30% 50%, rgba(255,85,0,0.2) 0%, transparent 60%), radial-gradient(ellipse at 70% 30%, rgba(99,102,241,0.12) 0%, transparent 50%)', animation: 'float 8s ease-in-out infinite'}} />
+          <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '50px 50px'}} />
+        </div>
 
         <div className="absolute inset-0 bg-black/30 z-10 pointer-events-none"></div>
 

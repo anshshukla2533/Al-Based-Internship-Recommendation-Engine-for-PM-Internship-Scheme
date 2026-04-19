@@ -16,14 +16,20 @@ Usage:
     pip install playwright && python -m playwright install chromium
     python fetch_internships.py
 """
-import json
-import os
-import re
-import time
-from dotenv import load_dotenv
-load_dotenv(".env.txt")
-JOBS_JSON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "jobs.json")
-PM_PORTAL_URL = "https://pminternship.mca.gov.in/"
+import json
+import os
+import re
+import time
+from dotenv import load_dotenv
+load_dotenv(".env.txt")
+
+try:
+    from firecrawl import FirecrawlApp
+except ImportError:
+    FirecrawlApp = None
+
+JOBS_JSON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "jobs.json")
+PM_PORTAL_URL = "https://pminternship.mca.gov.in/"
 SOURCE_NAME = "PM Internship Portal"
 def extract_featured_text(page) -> str:
     """Extract the Featured Internships section text from the rendered page."""
@@ -197,92 +203,148 @@ def infer_skills(title: str, sector: str = "", field: str = "") -> list:
         seen.add(key)
         deduped.append(skill)
     return deduped[:6]
-def scrape_pm_portal() -> list:
-    """Use Playwright to scrape real internship data from PM portal."""
-    from playwright.sync_api import sync_playwright
-    print("\n  [Playwright] Launching headless Chromium...")
-    all_listings = []
-    seen_keys = set()
-    geolocations = [
-        {"name": "Hyderabad", "lat": 17.385, "lon": 78.487},
-        {"name": "Delhi", "lat": 28.614, "lon": 77.209},
-        {"name": "Mumbai", "lat": 19.076, "lon": 72.878},
-        {"name": "Bangalore", "lat": 12.972, "lon": 77.595},
-        {"name": "Chennai", "lat": 13.083, "lon": 80.271},
-        {"name": "Kolkata", "lat": 22.573, "lon": 88.364},
-        {"name": "Pune", "lat": 18.520, "lon": 73.857},
-        {"name": "Ahmedabad", "lat": 23.023, "lon": 72.572},
-    ]
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        for geo in geolocations:
-            print(f"\n  >> Scraping from {geo['name']}...")
-            context = browser.new_context(
-                viewport={"width": 1440, "height": 900},
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-                locale="en-IN",
-                geolocation={"latitude": geo["lat"], "longitude": geo["lon"]},
-                permissions=["geolocation"],
-            )
-            page = context.new_page()
-            try:
-                page.goto(PM_PORTAL_URL, timeout=60000, wait_until="commit")
-            except:
-                print(f"    Navigation timeout, continuing...")
-            time.sleep(20)
-            page.evaluate("window.scrollTo(0, 1000)")
-            time.sleep(3)
-            featured = extract_featured_text(page)
-            if featured:
-                listings = parse_featured_text(featured)
-                for l in listings:
-                    key = f"{l['title']}-{l['company']}"
-                    if key not in seen_keys:
-                        seen_keys.add(key)
-                        all_listings.append(l)
-                print(f"    Found {len(listings)} cards, {len(all_listings)} unique total")
-            for click in range(5):
-                try:
-                    page.evaluate("""
-                        () => {
-                            const btns = document.querySelectorAll('button, [role="button"]');
-                            for (const btn of btns) {
-                                const rect = btn.getBoundingClientRect();
-                                const text = (btn.textContent || '').trim();
-                                if ((text === '>' || text === '›' || text === '→') &&
-                                    rect.y > 300 && rect.y < 800 && rect.width > 0 && rect.width < 80) {
-                                    btn.click();
-                                    return true;
-                                }
-                            }
-                            // Try SVG arrows
-                            const arrows = document.querySelectorAll('svg');
-                            for (const svg of arrows) {
-                                const rect = svg.getBoundingClientRect();
-                                if (rect.x > 1200 && rect.y > 400 && rect.y < 800) {
-                                    svg.parentElement.click();
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }
-                    """)
-                    time.sleep(2)
-                    featured = extract_featured_text(page)
-                    if featured:
-                        listings = parse_featured_text(featured)
-                        for l in listings:
-                            key = f"{l['title']}-{l['company']}"
-                            if key not in seen_keys:
-                                seen_keys.add(key)
-                                all_listings.append(l)
-                except:
-                    pass
-            context.close()
-            if len(all_listings) >= 30:
-                print(f"\n  >> Got {len(all_listings)} unique listings, stopping.")
-                break
-        browser.close()
+def scrape_pm_portal_firecrawl() -> list:
+    """Use Firecrawl to scrape PM portal — much faster than Playwright."""
+    fc_key = os.getenv("FIRECRAWL_API_KEY")
+    if not fc_key or FirecrawlApp is None:
+        raise RuntimeError("Firecrawl not available")
+    print("\n  [Firecrawl] Scraping PM Internship Portal...")
+    fc = FirecrawlApp(api_key=fc_key)
+    result = fc.scrape_url(PM_PORTAL_URL, params={"formats": ["markdown", "html"], "timeout": 60000})
+    content = ""
+    if isinstance(result, dict):
+        content = result.get("markdown") or result.get("html") or result.get("content") or ""
+    else:
+        content = str(result)
+    if not content or len(content) < 200:
+        raise RuntimeError(f"Firecrawl returned insufficient content ({len(content)} chars)")
+    print(f"  [Firecrawl] Got {len(content)} chars from PM portal")
+    lines = [l.strip() for l in content.split('\n') if l.strip()]
+    listings = []
+    seen_keys = set()
+    i = 0
+    while i < len(lines):
+        for kw in ["internship", "intern ", "trainee", "apprentice"]:
+            if kw in lines[i].lower() and len(lines[i]) > 10 and len(lines[i]) < 200:
+                title = re.sub(r'^[#*\-\|>]+\s*', '', lines[i]).strip()
+                if not title or len(title) < 5:
+                    break
+                company = ""
+                location = "India"
+                for j in range(max(0, i-3), min(len(lines), i+5)):
+                    if j == i:
+                        continue
+                    line_clean = re.sub(r'^[#*\-\|>]+\s*', '', lines[j]).strip()
+                    if any(s in line_clean.upper() for s in INDIAN_STATES) and len(line_clean) < 80:
+                        location = line_clean.title()
+                    elif not company and len(line_clean) > 3 and len(line_clean) < 100 and line_clean != title:
+                        company = line_clean
+                if not company:
+                    company = "PM Internship Scheme"
+                key = f"{title}-{company}"
+                if key not in seen_keys:
+                    seen_keys.add(key)
+                    sector = infer_sector(f"{title} {company}")
+                    listings.append({
+                        "title": title,
+                        "company": company,
+                        "location": location,
+                        "sector": sector,
+                        "field": "",
+                        "education": "Graduate",
+                        "description": f"{title} at {company} under PM Internship Scheme. Location: {location}.",
+                        "skills": infer_skills(title, sector, ""),
+                    })
+                break
+        i += 1
+    print(f"  [Firecrawl] Parsed {len(listings)} internship listings")
+    return listings
+
+def scrape_pm_portal() -> list:
+    """Use Playwright to scrape real internship data from PM portal."""
+    from playwright.sync_api import sync_playwright
+    print("\n  [Playwright] Launching headless Chromium...")
+    all_listings = []
+    seen_keys = set()
+    geolocations = [
+        {"name": "Hyderabad", "lat": 17.385, "lon": 78.487},
+        {"name": "Delhi", "lat": 28.614, "lon": 77.209},
+        {"name": "Mumbai", "lat": 19.076, "lon": 72.878},
+        {"name": "Bangalore", "lat": 12.972, "lon": 77.595},
+        {"name": "Chennai", "lat": 13.083, "lon": 80.271},
+        {"name": "Kolkata", "lat": 22.573, "lon": 88.364},
+        {"name": "Pune", "lat": 18.520, "lon": 73.857},
+        {"name": "Ahmedabad", "lat": 23.023, "lon": 72.572},
+    ]
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        for geo in geolocations:
+            print(f"\n  >> Scraping from {geo['name']}...")
+            context = browser.new_context(
+                viewport={"width": 1440, "height": 900},
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                locale="en-IN",
+                geolocation={"latitude": geo["lat"], "longitude": geo["lon"]},
+                permissions=["geolocation"],
+            )
+            page = context.new_page()
+            try:
+                page.goto(PM_PORTAL_URL, timeout=60000, wait_until="commit")
+            except:
+                print(f"    Navigation timeout, continuing...")
+            time.sleep(20)
+            page.evaluate("window.scrollTo(0, 1000)")
+            time.sleep(3)
+            featured = extract_featured_text(page)
+            if featured:
+                listings = parse_featured_text(featured)
+                for l in listings:
+                    key = f"{l['title']}-{l['company']}"
+                    if key not in seen_keys:
+                        seen_keys.add(key)
+                        all_listings.append(l)
+                print(f"    Found {len(listings)} cards, {len(all_listings)} unique total")
+            for click in range(5):
+                try:
+                    page.evaluate("""
+                        () => {
+                            const btns = document.querySelectorAll('button, [role="button"]');
+                            for (const btn of btns) {
+                                const rect = btn.getBoundingClientRect();
+                                const text = (btn.textContent || '').trim();
+                                if ((text === '>' || text === '›' || text === '→') &&
+                                    rect.y > 300 && rect.y < 800 && rect.width > 0 && rect.width < 80) {
+                                    btn.click();
+                                    return true;
+                                }
+                            }
+                            const arrows = document.querySelectorAll('svg');
+                            for (const svg of arrows) {
+                                const rect = svg.getBoundingClientRect();
+                                if (rect.x > 1200 && rect.y > 400 && rect.y < 800) {
+                                    svg.parentElement.click();
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                    """)
+                    time.sleep(2)
+                    featured = extract_featured_text(page)
+                    if featured:
+                        listings = parse_featured_text(featured)
+                        for l in listings:
+                            key = f"{l['title']}-{l['company']}"
+                            if key not in seen_keys:
+                                seen_keys.add(key)
+                                all_listings.append(l)
+                except:
+                    pass
+            context.close()
+            if len(all_listings) >= 30:
+                print(f"\n  >> Got {len(all_listings)} unique listings, stopping.")
+                break
+        browser.close()
     return all_listings
 def normalize_listing(item: dict, idx: int) -> dict:
     """Final normalization to our JSON schema."""
@@ -299,13 +361,25 @@ def normalize_listing(item: dict, idx: int) -> dict:
         "apply_url": PM_PORTAL_URL,
         "source": SOURCE_NAME,
     }
-def fetch_and_save_internships(min_results: int = 3) -> list:
-    scraped = scrape_pm_portal()
-    if len(scraped) < min_results:
-        raise RuntimeError(f"Only found {len(scraped)} internship listings from the PM portal.")
-    final_data = [normalize_listing(item, idx + 1) for idx, item in enumerate(scraped)]
-    with open(JOBS_JSON_PATH, "w", encoding="utf-8") as f:
-        json.dump(final_data, f, indent=2, ensure_ascii=False)
+def fetch_and_save_internships(min_results: int = 3) -> list:
+    scraped = []
+    try:
+        scraped = scrape_pm_portal_firecrawl()
+        print(f"  [Firecrawl] Got {len(scraped)} listings via Firecrawl")
+    except Exception as fc_err:
+        print(f"  [Firecrawl] Failed, falling back to Playwright: {fc_err}")
+    if len(scraped) < min_results:
+        try:
+            scraped = scrape_pm_portal()
+        except Exception as pw_err:
+            print(f"  [Playwright] Also failed: {pw_err}")
+            if not scraped:
+                raise RuntimeError(f"Both Firecrawl and Playwright failed to scrape PM portal.") from pw_err
+    if len(scraped) < min_results:
+        raise RuntimeError(f"Only found {len(scraped)} internship listings from the PM portal.")
+    final_data = [normalize_listing(item, idx + 1) for idx, item in enumerate(scraped)]
+    with open(JOBS_JSON_PATH, "w", encoding="utf-8") as f:
+        json.dump(final_data, f, indent=2, ensure_ascii=False)
     return final_data
 def main():
     print("=" * 60)
