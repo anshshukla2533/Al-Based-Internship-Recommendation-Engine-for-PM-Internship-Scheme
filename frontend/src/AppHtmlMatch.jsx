@@ -18,6 +18,7 @@ import {
 import { AIChatMentorRedesign } from "./components/AIChatMentorRedesign";
 import { InterviewSimulatorRedesign } from "./components/InterviewSimulatorRedesign";
 import { OnboardingWizard } from "./components/onboarding/OnboardingWizard";
+import { VoiceWidget } from "./components/VoiceWidget";
 import { auth, onAuthStateChanged, provider, signInWithPopup, signOut } from "./firebase";
 
 const API_BASE_CANDIDATES = Array.from(new Set([
@@ -408,6 +409,7 @@ export default function AppHtmlMatch() {
         job_title: job.title,
         company: job.company,
         skills: job.matched_skills?.length ? job.matched_skills : skills,
+        question_count: 12,
       });
       setInterviewQuestions(response.data.questions || []);
       if (response.data.questions?.length) setInterviewOpen(true);
@@ -802,6 +804,7 @@ export default function AppHtmlMatch() {
 
       {chatEnabled && jobs.length > 0 && <AIChatMentorRedesign skills={skills} language="English" />}
       {interviewOpen && <InterviewSimulatorRedesign questions={interviewQuestions} onClose={() => setInterviewOpen(false)} />}
+      <VoiceWidget />
     </div>
   );
 }

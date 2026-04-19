@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Brain, CheckCircle2, Code2, Loader2, Trophy } from "lucide-react";
-import { generateAssessmentBundle } from "./onboardingApi";
-import { LightweightCodeEditor } from "./LightweightCodeEditor";
+import { Brain, CheckCircle2, Code2, Loader2, Trophy, Play } from "lucide-react";
+import { generateAssessmentBundle, executeCode, calculateCheatingScore } from "./onboardingApi";
+import { MonacoCodeEditor } from "./MonacoCodeEditor";
+import { CheatingDetector } from "./CheatingDetector";
 import type { AssessmentBundle, StageScores, StageTab } from "./types";
 
 type Step2AssessmentProps = {
@@ -15,7 +16,13 @@ export function Step2_Assessment({ skills, onBack, onComplete }: Step2Assessment
   const [bundle, setBundle] = useState<AssessmentBundle | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [codeByChallenge, setCodeByChallenge] = useState<Record<string, string>>({});
+  const [executionResults, setExecutionResults] = useState<Record<string, { stdout: string; stderr: string; error: boolean }>>({});
   const [loading, setLoading] = useState(true);
+  const [isTest2Skipped, setIsTest2Skipped] = useState(false);
+  
+  // Cheating Telemetry
+  const [telemetry, setTelemetry] = useState({ tabSwitches: 0, copyPasteCount: 0 });
+  const [startTime] = useState(Date.now());
 
   useEffect(() => {
     let alive = true;
@@ -36,15 +43,30 @@ export function Step2_Assessment({ skills, onBack, onComplete }: Step2Assessment
   const completion = useMemo(() => {
     if (!bundle) return { basics: 0, deep: 0 };
     const answeredBasics = bundle.basics.filter((question) => answers[question.id]?.trim()).length;
-    const solvedDeep = bundle.deep.filter((challenge) => codeByChallenge[challenge.id]?.trim().length > 40).length;
+    const solvedDeep = bundle.deep.filter((challenge) => codeByChallenge[challenge.id]?.trim().length > 10).length;
     return {
       basics: Math.round((answeredBasics / Math.max(bundle.basics.length, 1)) * 100),
       deep: Math.round((solvedDeep / Math.max(bundle.deep.length, 1)) * 100),
     };
   }, [answers, bundle, codeByChallenge]);
 
-  const submitAssessment = () => {
+  const handleRunCode = async (challengeId: string) => {
+    const code = codeByChallenge[challengeId] || "";
+    setExecutionResults(prev => ({ ...prev, [challengeId]: { stdout: "Executing...", stderr: "", error: false } }));
+    const result = await executeCode(code, "python");
+    setExecutionResults(prev => ({ ...prev, [challengeId]: result }));
+  };
+
+  const submitAssessment = async () => {
     if (!bundle) return;
+    
+    // Calculate cheating score
+    const timeTakenSeconds = Math.floor((Date.now() - startTime) / 1000);
+    const cheatScore = await calculateCheatingScore({
+      tabSwitches: telemetry.tabSwitches,
+      copyPasteCount: telemetry.copyPasteCount,
+      timeTakenSeconds
+    });
 
     const correctBasics = bundle.basics.reduce((score, question) => {
       const userAnswer = (answers[question.id] || "").trim().toLowerCase();
@@ -54,16 +76,27 @@ export function Step2_Assessment({ skills, onBack, onComplete }: Step2Assessment
     }, 0);
 
     const stage1 = Math.round((correctBasics / Math.max(bundle.basics.length, 1)) * 100);
-    const deepScore = bundle.deep.reduce((score, challenge) => {
-      const code = (codeByChallenge[challenge.id] || "").toLowerCase();
-      const hitCount = challenge.expectedSignals.filter((signal) => code.includes(signal.toLowerCase())).length;
-      const implementationBonus = code.length > 90 ? 20 : 0;
-      return score + Math.min(100, Math.round((hitCount / challenge.expectedSignals.length) * 80 + implementationBonus));
-    }, 0);
-    const stage2 = Math.round(deepScore / Math.max(bundle.deep.length, 1));
-    const total = Math.round(stage1 * 0.45 + stage2 * 0.55);
+    
+    let stage2 = 0;
+    if (!isTest2Skipped) {
+      const deepScore = bundle.deep.reduce((score, challenge) => {
+        const code = (codeByChallenge[challenge.id] || "").toLowerCase();
+        const hitCount = challenge.expectedSignals.filter((signal) => code.includes(signal.toLowerCase())).length;
+        const implementationBonus = code.length > 30 ? 20 : 0;
+        return score + Math.min(100, Math.round((hitCount / Math.max(challenge.expectedSignals.length, 1)) * 80 + implementationBonus));
+      }, 0);
+      stage2 = Math.round(deepScore / Math.max(bundle.deep.length, 1));
+    }
 
-    onComplete({ stage1, stage2, total });
+    // Combine and apply anti-cheat penalty
+    let total = isTest2Skipped 
+      ? Math.round(stage1 * 0.7) // Cap max score if skipped
+      : Math.round(stage1 * 0.45 + stage2 * 0.55);
+      
+    // Apply cheating penalty
+    total = Math.max(0, total - Math.floor(cheatScore / 2));
+
+    onComplete({ stage1, stage2, total, cheatingScore: cheatScore });
   };
 
   if (loading || !bundle) {
@@ -81,7 +114,9 @@ export function Step2_Assessment({ skills, onBack, onComplete }: Step2Assessment
   }
 
   return (
-    <div className="rounded-[2rem] border border-[var(--border)] bg-white/90 p-5 shadow-2xl shadow-slate-950/5 dark:bg-white/5 md:p-7">
+    <div className="rounded-[2rem] border border-[var(--border)] bg-white/90 p-5 shadow-2xl shadow-slate-950/5 dark:bg-white/5 md:p-7 relative">
+      <CheatingDetector onTelemetryUpdate={(data) => setTelemetry(data)} />
+      
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-600">Dynamic assessment</p>
@@ -89,7 +124,7 @@ export function Step2_Assessment({ skills, onBack, onComplete }: Step2Assessment
             Prove the trust score
           </h3>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
-            Stage 1 checks fundamentals. Stage 2 checks deeper reasoning and implementation confidence for high-quality matching.
+            Test 1 (Basics) is mandatory. Test 2 (Deep + CP) checks reasoning and implementation for high-quality matching, but can be skipped.
           </p>
         </div>
 
@@ -101,7 +136,7 @@ export function Step2_Assessment({ skills, onBack, onComplete }: Step2Assessment
               activeTab === "basics" ? "bg-white text-orange-600 shadow-lg dark:bg-white dark:text-slate-950" : "text-slate-600 dark:text-slate-300"
             }`}
           >
-            Basics {completion.basics}%
+            Test 1: Basics {completion.basics}%
           </button>
           <button
             type="button"
@@ -110,7 +145,7 @@ export function Step2_Assessment({ skills, onBack, onComplete }: Step2Assessment
               activeTab === "deep" ? "bg-white text-orange-600 shadow-lg dark:bg-white dark:text-slate-950" : "text-slate-600 dark:text-slate-300"
             }`}
           >
-            Deep + CP {completion.deep}%
+            Test 2: Deep {isTest2Skipped ? "(Skipped)" : `${completion.deep}%`}
           </button>
         </div>
       </div>
@@ -159,37 +194,59 @@ export function Step2_Assessment({ skills, onBack, onComplete }: Step2Assessment
         </div>
       ) : (
         <div className="mt-8 grid gap-6">
-          {bundle.deep.map((challenge) => (
-            <article key={challenge.id} className="grid gap-5 lg:grid-cols-[0.88fr_1.12fr]">
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-white/10 dark:bg-white/5">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-white dark:bg-white dark:text-slate-950">
-                  <Code2 size={15} />
-                  {challenge.difficulty}
-                </div>
-                <h4 className="font-display text-3xl font-black text-slate-950 dark:text-white">{challenge.title}</h4>
-                <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">{challenge.prompt}</p>
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {challenge.companyTargets.map((company) => (
-                    <span
-                      key={company}
-                      className="rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-black uppercase tracking-[0.2em] text-orange-700 dark:border-orange-300/20 dark:bg-orange-300/10 dark:text-orange-200"
-                    >
-                      {company}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-6 flex items-center gap-3 rounded-2xl bg-white p-4 text-sm font-semibold text-slate-600 dark:bg-black/20 dark:text-slate-300">
-                  <Trophy size={18} className="text-orange-500" />
-                  Company badges unlock stronger interview-prep vault content after matching.
-                </div>
+          {!isTest2Skipped ? (
+            <>
+              <div className="flex justify-end mb-2">
+                 <button onClick={() => setIsTest2Skipped(true)} className="text-sm font-bold text-slate-500 hover:text-slate-800 underline">Skip Test 2 (Max score will be capped)</button>
               </div>
+              {bundle.deep.map((challenge) => (
+                <article key={challenge.id} className="grid gap-5 lg:grid-cols-[0.88fr_1.12fr]">
+                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-white/10 dark:bg-white/5">
+                    <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-slate-950 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-white dark:bg-white dark:text-slate-950">
+                      <Code2 size={15} />
+                      {challenge.difficulty}
+                    </div>
+                    <h4 className="font-display text-3xl font-black text-slate-950 dark:text-white">{challenge.title}</h4>
+                    <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">{challenge.prompt}</p>
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      {challenge.companyTargets.map((company) => (
+                        <span
+                          key={company}
+                          className="rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-black uppercase tracking-[0.2em] text-orange-700 dark:border-orange-300/20 dark:bg-orange-300/10 dark:text-orange-200"
+                        >
+                          {company}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
 
-              <LightweightCodeEditor
-                value={codeByChallenge[challenge.id] || challenge.starterCode}
-                onChange={(value) => setCodeByChallenge((previous) => ({ ...previous, [challenge.id]: value }))}
-              />
-            </article>
-          ))}
+                  <div className="flex flex-col gap-2">
+                    <MonacoCodeEditor
+                      language="python"
+                      value={codeByChallenge[challenge.id] || challenge.starterCode}
+                      onChange={(value) => setCodeByChallenge((previous) => ({ ...previous, [challenge.id]: value }))}
+                    />
+                    <div className="flex justify-end">
+                      <button onClick={() => handleRunCode(challenge.id)} className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl hover:bg-slate-700 text-sm font-bold">
+                        <Play size={14} /> Run Code
+                      </button>
+                    </div>
+                    {executionResults[challenge.id] && (
+                      <div className={`mt-2 p-3 rounded-xl text-xs font-mono ${executionResults[challenge.id].error ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-slate-100 text-slate-800 dark:bg-black/40 dark:text-slate-300'}`}>
+                        {executionResults[challenge.id].stdout && <div>{executionResults[challenge.id].stdout}</div>}
+                        {executionResults[challenge.id].stderr && <div className="text-red-500">{executionResults[challenge.id].stderr}</div>}
+                      </div>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </>
+          ) : (
+             <div className="text-center py-10">
+               <p className="text-lg font-bold text-slate-600 dark:text-slate-300">You have opted to skip Test 2.</p>
+               <button onClick={() => setIsTest2Skipped(false)} className="mt-4 text-orange-600 hover:underline">Changed your mind? Take Test 2</button>
+             </div>
+          )}
         </div>
       )}
 
@@ -207,7 +264,7 @@ export function Step2_Assessment({ skills, onBack, onComplete }: Step2Assessment
           className="inline-flex items-center justify-center gap-3 rounded-2xl bg-orange-600 px-6 py-4 text-sm font-black uppercase tracking-[0.2em] text-white shadow-xl shadow-orange-500/20 transition hover:-translate-y-1 hover:bg-orange-500"
         >
           <CheckCircle2 size={18} />
-          Generate trust dashboard
+          Submit & Generate Dashboard
         </button>
       </div>
     </div>

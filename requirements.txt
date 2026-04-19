@@ -1,28 +1,35 @@
-# Core Backend
-fastapi
-uvicorn[standard]
-pydantic
+# Core Backend
+fastapi
+uvicorn[standard]
+pydantic
 python-dotenv
-
 python-multipart
-# PDF Processing
-pdfplumber
-pdf2image
-pytesseract
-python-docx
-Pillow
-# AI / ML
-google-generativeai
-groq
-openai
+
+# PDF Processing
+pdfplumber
+pdf2image
+pytesseract
+python-docx
+Pillow
+pypdf
+
+# AI / ML
+google-generativeai
+groq
+openai
 scikit-learn
-
 deep-translator
-# Web Scraping
-firecrawl-py
-requests
 
+# Web Scraping
+firecrawl-py
+requests
+playwright
+
+# Voice AI
 omnidimension
-playwright
-# HTTP (must be modern for Python 3.13)
+
+# HTTP
 httpx>=0.27
+
+# Database (optional, for Docker/PostgreSQL mode)
+psycopg2-binary

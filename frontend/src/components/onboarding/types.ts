@@ -35,6 +35,7 @@ export type AssessmentBundle = {
 };
 
 export type StageScores = {
+  cheatingScore?: number;
   stage1: number;
   stage2: number;
   total: number;
@@ -62,14 +63,37 @@ export type InternshipMatch = {
 };
 
 export type WizardResults = {
+  cheatingScore?: number;
+  analytics?: any;
   scores: StageScores;
   skillGaps: SkillGap[];
   resources: LearningResource[];
   matches: InternshipMatch[];
+  trustAssessment?: {
+    trustScore: number;
+    trustLevel: string;
+    breakdown?: Record<string, number>;
+    recommendations?: string[];
+  };
+  resumeImprover?: {
+    atsScore?: number;
+    missingKeywords?: string[];
+    tips?: string[];
+    suggestions?: Array<{
+      section: string;
+      current_issue: string;
+      improvement: string;
+      priority: string;
+    }>;
+  };
 };
 
 export type OnboardingProfile = {
   location: string;
   preferredSector: string;
   education: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  email?: string;
+  targetRole?: string;
 };

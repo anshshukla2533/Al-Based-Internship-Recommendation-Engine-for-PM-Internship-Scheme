@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { BrainCircuit, CheckCircle, XCircle, ChevronRight, Award } from 'lucide-react';
+import { BrainCircuit, CheckCircle, XCircle, ChevronRight, Award, X } from 'lucide-react';
 
 export const InterviewSimulator = ({ questions, onClose }) => {
 
@@ -56,17 +56,17 @@ export const InterviewSimulator = ({ questions, onClose }) => {
 
             animate={{ opacity: 1, scale: 1 }}
 
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
 
         >
 
-            <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl relative">
+            <div className="bg-black/90 backdrop-blur-2xl border border-white/20 max-w-lg w-full overflow-hidden shadow-[0_0_60px_rgba(255,85,0,0.15)] relative">
 
-                { }
+                {}
 
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 flex justify-between items-center relative overflow-hidden">
+                <div className="bg-white/5 border-b border-white/10 p-6 flex justify-between items-center relative overflow-hidden">
 
-                    <div className="absolute -right-10 -top-10 text-white/10">
+                    <div className="absolute -right-10 -top-10 text-neon/10">
 
                         <BrainCircuit size={120} />
 
@@ -76,31 +76,27 @@ export const InterviewSimulator = ({ questions, onClose }) => {
 
                         <div className="flex items-center gap-2 mb-1">
 
-                            <BrainCircuit size={20} />
+                            <BrainCircuit size={20} className="text-neon" />
 
-                            <h2 className="text-sm font-bold tracking-widest uppercase text-blue-200">AI Mock Interview</h2>
+                            <h2 className="text-[10px] font-bold tracking-[0.4em] uppercase text-neon">AI Mock Interview</h2>
 
                         </div>
 
-                        <h3 className="text-xl font-black">Question {currentIdx + 1} of {questions.length}</h3>
+                        <h3 className="text-xl font-pixel uppercase tracking-wider">Question {currentIdx + 1} of {questions.length}</h3>
 
                     </div>
 
-                    {finished && (
+                    <button onClick={onClose} className="text-white/50 hover:text-white border border-white/20 p-2 hover:border-neon transition-all">
 
-                        <button onClick={onClose} className="text-white bg-white/20 p-2 rounded-full hover:bg-white/30 transition">
+                        <X size={20} />
 
-                            <XCircle size={24} />
-
-                        </button>
-
-                    )}
+                    </button>
 
                 </div>
 
-                { }
+                {}
 
-                <div className="h-1.5 bg-gray-100 w-full relative">
+                <div className="h-1 bg-white/10 w-full relative">
 
                     <motion.div 
 
@@ -108,7 +104,7 @@ export const InterviewSimulator = ({ questions, onClose }) => {
 
                         animate={{ width: `${((currentIdx + (finished ? 1 : 0)) / questions.length) * 100}%` }}
 
-                        className="absolute top-0 left-0 h-full bg-blue-500"
+                        className="absolute top-0 left-0 h-full bg-neon shadow-[0_0_10px_rgba(255,85,0,0.8)]"
 
                     />
 
@@ -120,17 +116,13 @@ export const InterviewSimulator = ({ questions, onClose }) => {
 
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-8">
 
-                            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-100 text-green-500 mb-6 border-8 border-green-50">
+                            <Award size={64} className="mx-auto text-neon mb-8" />
 
-                                <Award size={48} />
+                            <h3 className="text-2xl font-pixel text-white mb-2 uppercase tracking-widest">Interview Complete!</h3>
 
-                            </div>
+                            <p className="text-xl text-white/50 font-black tracking-[0.3em] mb-10">
 
-                            <h3 className="text-3xl font-black text-gray-800 mb-2">Interview Complete!</h3>
-
-                            <p className="text-lg text-gray-500 font-medium bg-gray-50 inline-block px-6 py-2 rounded-full">
-
-                                You scored {score} out of {questions.length}
+                                Score: {score} / {questions.length}
 
                             </p>
 
@@ -138,7 +130,7 @@ export const InterviewSimulator = ({ questions, onClose }) => {
 
                                 onClick={onClose}
 
-                                className="mt-8 w-full bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition"
+                                className="w-full bg-neon text-black font-bold py-4 border border-neon uppercase tracking-widest text-sm btn-glow hover:bg-transparent hover:text-neon transition-all"
 
                             >
 
@@ -164,7 +156,9 @@ export const InterviewSimulator = ({ questions, onClose }) => {
 
                             >
 
-                                <p className="text-lg font-bold text-gray-800 mb-6 leading-relaxed">
+                                <p className="text-lg font-light text-white mb-6 leading-relaxed">
+
+                                    <span className="text-neon font-pixel text-sm mr-2">{currentIdx + 1}.</span>
 
                                     {currentQ.q}
 
@@ -174,7 +168,7 @@ export const InterviewSimulator = ({ questions, onClose }) => {
 
                                     {currentQ.options.map((opt, i) => {
 
-                                        let stateClass = "border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50";
+                                        let stateClass = "border-white/10 bg-black/40 hover:border-white/30 text-white/70";
 
                                         let icon = null;
 
@@ -182,19 +176,19 @@ export const InterviewSimulator = ({ questions, onClose }) => {
 
                                             if (opt === currentQ.a) {
 
-                                                stateClass = "border-green-500 bg-green-50 text-green-800 font-bold";
+                                                stateClass = "border-green-500 bg-green-500/10 text-green-400";
 
                                                 icon = <CheckCircle className="text-green-500" size={20} />;
 
                                             } else if (opt === selected) {
 
-                                                stateClass = "border-red-500 bg-red-50 text-red-800 font-bold";
+                                                stateClass = "border-red-500 bg-red-500/10 text-red-400";
 
                                                 icon = <XCircle className="text-red-500" size={20} />;
 
                                             } else {
 
-                                                stateClass = "border-gray-200 bg-gray-50 opacity-50";
+                                                stateClass = "border-white/5 bg-black/20 opacity-50";
 
                                             }
 
@@ -210,11 +204,11 @@ export const InterviewSimulator = ({ questions, onClose }) => {
 
                                                 disabled={!!selected}
 
-                                                className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-200 flex justify-between items-center ${stateClass}`}
+                                                className={`w-full p-4 border text-left transition-all duration-200 flex justify-between items-center ${stateClass}`}
 
                                             >
 
-                                                <span className="text-[15px]">{opt}</span>
+                                                <span className="text-sm">{opt}</span>
 
                                                 {icon}
 
@@ -236,7 +230,7 @@ export const InterviewSimulator = ({ questions, onClose }) => {
 
                                         onClick={nextQ}
 
-                                        className="mt-6 w-full bg-blue-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-700 shadow-md shadow-blue-500/20"
+                                        className="mt-6 w-full bg-transparent text-white border-2 border-white/30 font-bold py-4 flex items-center justify-center gap-2 uppercase tracking-widest text-xs hover:border-white hover:bg-white hover:text-black transition-colors"
 
                                     >
 

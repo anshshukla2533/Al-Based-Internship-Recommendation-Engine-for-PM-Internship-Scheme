@@ -8,9 +8,29 @@ type Step1SkillIngestionProps = {
   skills: string[];
   onSkillsChange: (skills: string[]) => void;
   onContinue: () => void;
+  profileSignals: {
+    githubUrl: string;
+    linkedinUrl: string;
+    email: string;
+    targetRole: string;
+  };
+  onProfileSignalsChange: (next: {
+    githubUrl: string;
+    linkedinUrl: string;
+    email: string;
+    targetRole: string;
+  }) => void;
+  onResumeTextExtracted: (resumeText: string) => void;
 };
 
-export function Step1_SkillIngestion({ skills, onSkillsChange, onContinue }: Step1SkillIngestionProps) {
+export function Step1_SkillIngestion({
+  skills,
+  onSkillsChange,
+  onContinue,
+  profileSignals,
+  onProfileSignalsChange,
+  onResumeTextExtracted,
+}: Step1SkillIngestionProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
@@ -31,8 +51,9 @@ export function Step1_SkillIngestion({ skills, onSkillsChange, onContinue }: Ste
     setFileName(file.name);
     setIsParsing(true);
     try {
-      const parsedSkills = await parseResumeWithOcr(file);
-      mergeSkills(parsedSkills);
+      const parsed = await parseResumeWithOcr(file);
+      mergeSkills(parsed.skills);
+      onResumeTextExtracted(parsed.resumeText || "");
     } finally {
       setIsParsing(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -68,14 +89,14 @@ export function Step1_SkillIngestion({ skills, onSkillsChange, onContinue }: Ste
               Upload resume for OCR parsing
             </h3>
             <p className="mt-3 max-w-xl text-sm leading-7 text-slate-600 dark:text-slate-300">
-              Drag a PDF here, or browse from your device. The wizard will call the OCR parsing endpoint and show editable skills before the assessment starts.
+              Drag a resume file here, or browse from your device. The wizard supports PDF, DOCX, and image resumes, then shows editable skills before assessment starts.
             </p>
           </div>
 
           <input
             ref={fileRef}
             type="file"
-            accept="application/pdf,.pdf"
+            accept="application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg,image/jpg,image/webp,image/bmp,image/tiff"
             className="hidden"
             onChange={(event) => handleFile(event.target.files?.[0])}
           />
@@ -86,7 +107,7 @@ export function Step1_SkillIngestion({ skills, onSkillsChange, onContinue }: Ste
             className="inline-flex items-center gap-3 rounded-full bg-orange-600 px-6 py-3 text-sm font-black uppercase tracking-[0.18em] text-white shadow-xl shadow-orange-500/20 transition hover:-translate-y-1 hover:bg-orange-500 disabled:cursor-wait disabled:opacity-70"
           >
             <FileText size={17} />
-            {isParsing ? "Reading PDF" : "Browse PDF"}
+            {isParsing ? "Reading Resume" : "Browse Resume"}
           </button>
 
           {isParsing ? (
@@ -100,7 +121,7 @@ export function Step1_SkillIngestion({ skills, onSkillsChange, onContinue }: Ste
             </div>
           ) : (
             <div className="rounded-3xl bg-slate-950 p-4 text-sm font-semibold text-white dark:bg-black/40">
-              Supported format: PDF resume. Editable skills will appear instantly after parsing.
+              Supported formats: PDF, DOCX, PNG, JPG, WEBP, BMP, TIFF.
             </div>
           )}
         </div>
@@ -119,6 +140,49 @@ export function Step1_SkillIngestion({ skills, onSkillsChange, onContinue }: Ste
 
         <div className="mt-6">
           <SkillChips skills={skills} onChange={onSkillsChange} />
+        </div>
+
+        <div className="mt-6 grid gap-3">
+          <label className="text-xs font-black uppercase tracking-[0.16em] text-slate-500 dark:text-slate-300">
+            GitHub Profile URL
+            <input
+              type="url"
+              value={profileSignals.githubUrl}
+              onChange={(event) => onProfileSignalsChange({ ...profileSignals, githubUrl: event.target.value })}
+              placeholder="https://github.com/your-username"
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-orange-400 dark:border-white/10 dark:bg-black/20 dark:text-white"
+            />
+          </label>
+          <label className="text-xs font-black uppercase tracking-[0.16em] text-slate-500 dark:text-slate-300">
+            LinkedIn Profile URL
+            <input
+              type="url"
+              value={profileSignals.linkedinUrl}
+              onChange={(event) => onProfileSignalsChange({ ...profileSignals, linkedinUrl: event.target.value })}
+              placeholder="https://www.linkedin.com/in/your-profile"
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-orange-400 dark:border-white/10 dark:bg-black/20 dark:text-white"
+            />
+          </label>
+          <label className="text-xs font-black uppercase tracking-[0.16em] text-slate-500 dark:text-slate-300">
+            Account Email
+            <input
+              type="email"
+              value={profileSignals.email}
+              onChange={(event) => onProfileSignalsChange({ ...profileSignals, email: event.target.value })}
+              placeholder="you@example.com"
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-orange-400 dark:border-white/10 dark:bg-black/20 dark:text-white"
+            />
+          </label>
+          <label className="text-xs font-black uppercase tracking-[0.16em] text-slate-500 dark:text-slate-300">
+            Target Role (Resume Improver)
+            <input
+              type="text"
+              value={profileSignals.targetRole}
+              onChange={(event) => onProfileSignalsChange({ ...profileSignals, targetRole: event.target.value })}
+              placeholder="Software Intern"
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-orange-400 dark:border-white/10 dark:bg-black/20 dark:text-white"
+            />
+          </label>
         </div>
 
         <button

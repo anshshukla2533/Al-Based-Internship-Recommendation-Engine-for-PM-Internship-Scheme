@@ -2,9 +2,13 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, ClipboardCheck, FileSearch, Gauge, Loader2, Sparkles } from "lucide-react";
 import {
+  computeTrustAssessment,
   createLearningResources,
   createSkillGaps,
+  fetchCourseRecommendations,
   fetchInternshipMatches,
+  fetchResumeImprover,
+  generateAnalytics,
 } from "./onboardingApi";
 import { Step1_SkillIngestion } from "./Step1_SkillIngestion";
 import { Step2_Assessment } from "./Step2_Assessment";
@@ -44,14 +48,33 @@ export function OnboardingWizard({ defaultProfile, onMatchesReady, onOpenMatches
   const [scores, setScores] = useState<StageScores | null>(null);
   const [results, setResults] = useState<WizardResults | null>(null);
   const [loadingResults, setLoadingResults] = useState(false);
+  const [resumeText, setResumeText] = useState("");
+  const [profileSignals, setProfileSignals] = useState({
+    githubUrl: defaultProfile?.githubUrl || "",
+    linkedinUrl: defaultProfile?.linkedinUrl || "",
+    email: defaultProfile?.email || "",
+    targetRole: defaultProfile?.targetRole || "PM Internship",
+  });
 
   const profile = useMemo<OnboardingProfile>(
     () => ({
       location: defaultProfile?.location || "India",
       education: defaultProfile?.education || "Graduate",
       preferredSector: defaultProfile?.preferredSector || "Any",
+      githubUrl: profileSignals.githubUrl,
+      linkedinUrl: profileSignals.linkedinUrl,
+      email: profileSignals.email,
+      targetRole: profileSignals.targetRole,
     }),
-    [defaultProfile?.education, defaultProfile?.location, defaultProfile?.preferredSector],
+    [
+      defaultProfile?.education,
+      defaultProfile?.location,
+      defaultProfile?.preferredSector,
+      profileSignals.email,
+      profileSignals.githubUrl,
+      profileSignals.linkedinUrl,
+      profileSignals.targetRole,
+    ],
   );
 
   const verifiedSkillCount = skills.length;
@@ -62,20 +85,31 @@ export function OnboardingWizard({ defaultProfile, onMatchesReady, onOpenMatches
     setLoadingResults(true);
 
     const skillGaps = createSkillGaps(skills, nextScores.stage1, nextScores.stage2);
-    const resources = createLearningResources(skillGaps);
-    const passed = nextScores.total >= 70;
-    const matches = passed ? await fetchInternshipMatches(skills, profile) : [];
+    const weakSkills = skillGaps.map(g => g.skill);
+
+    const [resources, matches, analyticsData, trustAssessment, resumeImprover] = await Promise.all([
+      fetchCourseRecommendations(skills, weakSkills),
+      fetchInternshipMatches(skills, profile),
+      generateAnalytics(skills, nextScores.total, nextScores.cheatingScore || 0),
+      computeTrustAssessment(profile, skills, nextScores.total, nextScores.cheatingScore || 0),
+      fetchResumeImprover(resumeText, skills, profileSignals.targetRole || "PM Internship"),
+    ]);
+
     const nextResults = {
       scores: nextScores,
       skillGaps,
       resources,
       matches,
+      analytics: analyticsData,
+      cheatingScore: nextScores.cheatingScore || 0,
+      trustAssessment,
+      resumeImprover,
     };
 
     setResults(nextResults);
     setLoadingResults(false);
 
-    if (passed && matches.length) {
+    if (matches.length) {
       onMatchesReady?.({ skills, matches, totalScore: nextScores.total });
     }
   };
@@ -168,6 +202,9 @@ export function OnboardingWizard({ defaultProfile, onMatchesReady, onOpenMatches
               <Step1_SkillIngestion
                 skills={skills}
                 onSkillsChange={setSkills}
+                profileSignals={profileSignals}
+                onProfileSignalsChange={setProfileSignals}
+                onResumeTextExtracted={setResumeText}
                 onContinue={() => setCurrentStep(2)}
               />
             )}

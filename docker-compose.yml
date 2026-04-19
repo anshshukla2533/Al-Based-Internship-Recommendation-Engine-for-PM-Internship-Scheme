@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.txt
+    volumes:
+      - ./jobs.json:/app/jobs.json
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: sh -c "npm install && npm run build"
+    profiles:
+      - build
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pm_internship
+      POSTGRES_USER: pm_user
+      POSTGRES_PASSWORD: pm_secure_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    restart: unless-stopped
+
+volumes:
+  pgdata:

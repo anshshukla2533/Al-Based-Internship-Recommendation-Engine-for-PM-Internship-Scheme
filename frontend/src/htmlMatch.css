@@ -48,7 +48,10 @@ body {
   background: var(--bg);
   color: var(--ink);
   overflow-x: hidden;
-  cursor: none;
+}
+
+@media (min-width: 901px) {
+  body { cursor: none; }
 }
 
 .html-match-shell { background: var(--bg); min-height: 100vh; }
